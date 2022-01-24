@@ -1,0 +1,5 @@
+# ide files
+/.idea
+
+# temp build files
+/index
