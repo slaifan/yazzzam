@@ -2,9 +2,6 @@ package uk.ac.ed.yazzzam.Indexer;
 
 import org.junit.jupiter.api.Test;
 import uk.ac.ed.yazzzam.compression.VariableByte;
-import uk.ac.ed.yazzzam.disk.PostingListDiskRepr;
-import uk.ac.ed.yazzzam.index.postinglists.PostingListFactory;
-import uk.ac.ed.yazzzam.index.postinglists.VarByteProximityPostingList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +16,7 @@ class VarByteProximityPostingListTest {
         var encodedPostingList = List.of(1,2,1,6,1,3,6,11,180,1,1,1);  // delta encoded
         var compressedPostingList = VariableByte.encode(encodedPostingList);
 
-        var postingList = PostingListFactory.load(PostingListDiskRepr.PROXIMITY_VARBYTE_COMPRESSED, compressedPostingList);
+        var postingList = new VarByteProximityPostingList(compressedPostingList);
 
         var reconstructedPostingList = new ArrayList<Integer>();
         while(postingList.moveToNextDocument()) {
@@ -42,7 +39,7 @@ class VarByteProximityPostingListTest {
         var encodedPostingList = List.of(1,2,1,6,1,3,6,11,180,1,1,1);  // delta encoded
         var compressedPostingList = VariableByte.encode(encodedPostingList);
 
-        var postingList = PostingListFactory.load(PostingListDiskRepr.PROXIMITY_VARBYTE_COMPRESSED, compressedPostingList);
+        var postingList = new VarByteProximityPostingList(compressedPostingList);
 
         var docs1 = new ArrayList<Integer>();
         while(postingList.moveToNextDocument()) {
@@ -64,7 +61,7 @@ class VarByteProximityPostingListTest {
         var encodedPostingList = List.of(1,2,1,6,1,3,6,11,180,1,1,1);  // delta encoded
         var compressedPostingList = VariableByte.encode(encodedPostingList);
 
-        var postingList = PostingListFactory.load(PostingListDiskRepr.PROXIMITY_VARBYTE_COMPRESSED, compressedPostingList);
+        var postingList = new VarByteProximityPostingList(compressedPostingList);
 
         postingList.moveToNextDocument();
         postingList.moveToNextDocument();
