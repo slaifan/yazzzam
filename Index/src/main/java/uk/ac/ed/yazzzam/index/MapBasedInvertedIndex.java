@@ -1,4 +1,4 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.index;
 
 import java.util.List;
 import java.util.Map;
@@ -10,9 +10,8 @@ import java.util.TreeMap;
 
 /**
  * Inverted Index internally using Map interface to store the data
- * @param <T>
  */
-public abstract class MapBasedInvertedIndex<T extends PostingListIterator> implements InvertedIndex<T> {
+public abstract class MapBasedInvertedIndex implements InvertedIndex {
 
     protected final Map<String, TreeMap<Integer, List<Integer>>> inverted_index;
 

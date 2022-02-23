@@ -1,13 +1,14 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.index.postinglists;
 
 import uk.ac.ed.yazzzam.compression.VariableByte;
 
+import java.io.EOFException;
 import java.util.NoSuchElementException;
 
 // WIP
 // TODO: Comment
 
-public class VarByteProximityPostingList implements TermPositionPostingListIterator {
+public class VarByteProximityPostingList implements ProximityPostingListIterator {
 
     private final byte[] compressedPostingList;
 
@@ -48,7 +49,13 @@ public class VarByteProximityPostingList implements TermPositionPostingListItera
     }
 
     private void updateDocumentMeta() {
-        var res = VariableByte.decodeNumber(compressedPostingList, currentDocumentPointer);
+        int[] res;
+        try {
+            res = VariableByte.decodeNumber(compressedPostingList, currentDocumentPointer);
+        } catch (EOFException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Posting list: EOF exception when decoding the number");
+        }
 
         if (currentDocumentId != -1) {
             currentDocumentId += res[0];
@@ -58,7 +65,12 @@ public class VarByteProximityPostingList implements TermPositionPostingListItera
 
         currentDocumentTermCountPointer = res[1];
 
-        res = VariableByte.decodeNumber(compressedPostingList, currentDocumentTermCountPointer);
+        try {
+            res = VariableByte.decodeNumber(compressedPostingList, currentDocumentTermCountPointer);
+        } catch (EOFException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Posting list: EOF exception when decoding the number");
+        }
         currentDocumentTermCount = res[0];
         remainingTermPositions = currentDocumentTermCount;
 
@@ -95,7 +107,13 @@ public class VarByteProximityPostingList implements TermPositionPostingListItera
             return false;
         }
 
-        var res = VariableByte.decodeNumber(compressedPostingList, nextTermPositionPointer);
+        int[] res;
+        try {
+            res = VariableByte.decodeNumber(compressedPostingList, nextTermPositionPointer);
+        } catch (EOFException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Posting list: EOF exception when decoding the number");
+        }
 
         if (currentTermPosition != -1) {
             currentTermPosition += res[0];
@@ -124,7 +142,7 @@ public class VarByteProximityPostingList implements TermPositionPostingListItera
      * and returns the index of the first byte of the n+1-th integer.
      * @param n - number of integers to skip
      * @param offset - posting list's index of the first encoded integer to skip
-     * @return
+     * @return an offset pointing to the beginning of the (n+1)-th var-byte encoded integer (starting from "offset")
      * @throws ArrayIndexOutOfBoundsException - when
      */
     private int skipPositions(int n, int offset) throws ArrayIndexOutOfBoundsException {
