@@ -1,24 +1,27 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.disk;
 
 import uk.ac.ed.yazzzam.compression.VariableByte;
+import uk.ac.ed.yazzzam.index.InvertedIndex;
+import uk.ac.ed.yazzzam.utils.ByteUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class BinaryProximityIndexWriter<T extends TermPositionPostingListIterator> implements IndexWriter<T> {
+public class BinaryProximityIndexWriter implements IndexWriter {
 
-    // TODO: MUST ADD THE LENGTH OF THE ENTRY
+    public final static PostingListDiskRepr usedDiskRepr = PostingListDiskRepr.PROXIMITY_VARBYTE_COMPRESSED;
+
+    // TODO: SHOULD ADD THE LENGTH OF THE ENTRY?
     @Override
-    public Map<String, Integer> writeToFile(InvertedIndex<T> invertedIndex, String fileName) throws IOException {
+    public Map<String, Integer> writeToFile(InvertedIndex invertedIndex, String fileName) throws IOException {
         // get all terms stored in the index in the sorted order
-        var terms = StreamSupport.stream(invertedIndex.getTermSpliterator(), false).sorted().collect(Collectors.toList());
+        var termsStream = StreamSupport.stream(invertedIndex.getTermSpliterator(), false).sorted();
         var termOffsets = new LinkedHashMap<String, Integer>();  // using LinkedHashMap so the offset are in order of writing to the file
         var byteOffset = 0;
 
@@ -27,10 +30,15 @@ public class BinaryProximityIndexWriter<T extends TermPositionPostingListIterato
 
         var indexFileName = indexDirectory + fileName + ".ii";
         try (var indexOutputStream = new BufferedOutputStream(new FileOutputStream(indexFileName));
-             var metaFileWriter = new BufferedWriter(new FileWriter(indexFileName + ".meta", false))
+             var metaFileWriter = new BufferedWriter(new FileWriter(indexFileName + ".meta", StandardCharsets.UTF_8, false))
         ) {
-            for (var term : terms) {
+            metaFileWriter.write(String.format("type,%s\n", usedDiskRepr.name()));  // used to read the index
+
+            for (var term : (Iterable<String>) termsStream::iterator) {
                 termOffsets.put(term, byteOffset);  // save the offset
+
+                indexOutputStream.write(ByteUtils.fromStringNullTerminated(term));
+                byteOffset += term.length() + 1;  // due to the NULL terminator
 
                 var postingList = invertedIndex.getPostingList(term);
                 var prevDocId = 0;  // used to delta encode the document numbers
@@ -69,3 +77,4 @@ public class BinaryProximityIndexWriter<T extends TermPositionPostingListIterato
         return termOffsets;
     }
 }
+

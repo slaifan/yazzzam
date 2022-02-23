@@ -1,11 +1,11 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.index.postinglists;
 
 import java.util.*;
 
 /**
  * Map-based implementation of the
  */
-public class ProximityPostingList implements TermPositionPostingListIterator {
+public class ProximityPostingList implements ProximityPostingListIterator {
     private final String term;
     private final TreeMap<Integer, List<Integer>> docPositions;  // TreeMap to ensure the order of keys
                                                                  // although a Map seems more appropriate,
@@ -18,7 +18,7 @@ public class ProximityPostingList implements TermPositionPostingListIterator {
     private Iterator<Integer> positionIterator;
     private int currentPosition = -1;
 
-    protected ProximityPostingList(String term, TreeMap<Integer, List<Integer>> docPositions) {
+    public ProximityPostingList(String term, TreeMap<Integer, List<Integer>> docPositions) {
         this.term = Objects.requireNonNull(term);
         this.docPositions = Objects.requireNonNull(docPositions);
         docIterator = docPositions.keySet().iterator();  // initialize the document iterator

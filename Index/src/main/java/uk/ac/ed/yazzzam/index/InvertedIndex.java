@@ -1,17 +1,19 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.index;
+
+import uk.ac.ed.yazzzam.index.postinglists.ProximityPostingListIterator;
 
 import java.util.Spliterator;
 
-public interface InvertedIndex<T extends PostingListIterator> {
+public interface InvertedIndex {
     /**
      * Retrieves the posting list for the specified term
      * @param term
      * @return posting list supported by the index
      */
-    public T getPostingList(String term);
+    ProximityPostingListIterator getPostingList(String term);
 
     /**
      * @return spliterator for the terms stored in the index
      */
-    public Spliterator<String> getTermSpliterator();
+    Spliterator<String> getTermSpliterator();
 }
