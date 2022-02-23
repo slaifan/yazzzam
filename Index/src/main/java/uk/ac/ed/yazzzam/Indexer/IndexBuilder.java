@@ -3,6 +3,7 @@ package uk.ac.ed.yazzzam.Indexer;
 import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 
 
@@ -20,10 +21,12 @@ public class IndexBuilder {
 	
 	
 	
-//	// Preprocesses an entire document and adds it to the songID_to_lyrics hashmap
-	public void preprocess_documents(String documents) {
+//	// Preprocesses an entire txt file and adds it to the songID_to_lyrics hashmap
+	public void preprocess_text_file(String txtFile) {
+
+		var documentsFile = new TextFileReader().readFile(txtFile);
 		
-		var all_lyrics = documents.split("Title: ");  // Split the document by title
+		var all_lyrics = documentsFile.split("Title: ");  // Split the document by title
 		
 		var preprocessed_lyrics = new ArrayList<List<String>>();
 		
@@ -41,13 +44,21 @@ public class IndexBuilder {
 		}
 		
 	}
+
+//	// Preprocesses an entire CSV file and adds it to the songID_to_lyrics hashmap
+//	public void preprocess_csv_file(String csvFile) throws FileNotFoundException {
+//		var documentsFile = new CSVReader().readFile(csvFile);		// Read the CSV file
+//
+//		var allSongs = new ArrayList<Song>();
+//
+//	}
 	
 	
 	// Preprocesses a single song and adds it to the songID_to_lyrics hashmap
-	public void preprocess_song(String song) {
+	public void preprocess_song(Song song) {
 		
-		var lyrics = String.join(" ", Arrays.asList(song.split("Title: ")));
-		
+		//var lyrics = String.join(" ", Arrays.asList(song.split("Title: ")));
+		var lyrics = song.getLyrics();
 		
 		songID_to_lyrics.put(songID_to_lyrics.size() - 1, preprocessor.preprocess(lyrics));
 		
