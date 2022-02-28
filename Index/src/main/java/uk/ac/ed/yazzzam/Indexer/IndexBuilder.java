@@ -1,5 +1,6 @@
 package uk.ac.ed.yazzzam.Indexer;
 
+import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
@@ -16,7 +17,7 @@ public class IndexBuilder {
 	}
 	
 	private Preprocessor preprocessor = new FullProcessor("englishST.txt");
-	
+//	private Preprocessor preprocessor = new BasicPreprocessor();
 	
 	
 	

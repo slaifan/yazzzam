@@ -1,15 +1,13 @@
 package uk.ac.ed.yazzzam.Search;
 
-import uk.ac.ed.yazzzam.index.InvertedIndex;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SimilaritySearch {
+public class SimilarWordsFinder {
     private TrieNode root;
     private HashMap<Integer, String> translation;
 
-    public SimilaritySearch(Set<String> keys) {
+    public SimilarWordsFinder(Set<String> keys) {
         root = new TrieNode();
         translation = new HashMap<>();
         var val = 0;
