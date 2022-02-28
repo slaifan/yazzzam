@@ -1,8 +1,8 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.index.postinglists;
 
 import java.util.NoSuchElementException;
 
-public interface TermPositionPostingListIterator extends PostingListIterator {
+public interface ProximityPostingListIterator extends PostingListIterator {
     /**
      * Moves the document's term position list "iterator" to the next document.
      * After indicating that all positions have been visited,

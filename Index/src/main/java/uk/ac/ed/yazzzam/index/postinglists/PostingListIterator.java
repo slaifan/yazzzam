@@ -1,4 +1,4 @@
-package uk.ac.ed.yazzzam.Indexer;
+package uk.ac.ed.yazzzam.index.postinglists;
 
 import java.util.NoSuchElementException;
 
