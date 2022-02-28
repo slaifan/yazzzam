@@ -6,10 +6,11 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        var documentsFile = new TextFileReader().readFile(args[0]);
+        //var documentsFile = new TextFileReader().readFile(args[0]);
+        //var songs = CSVReader.readFile(args[0]);
 
         IndexBuilder ib = new IndexBuilder();
-        ib.preprocess_documents(documentsFile);
+        ib.preprocess_documents(args[0]);
         var invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
 
         IndexWriter<ProximityPostingList> indexWriter = new BinaryProximityIndexWriter<>();
