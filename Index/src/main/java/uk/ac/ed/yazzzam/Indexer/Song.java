@@ -10,9 +10,9 @@ public class Song {
     private String artist;
     @CsvBindByName(column = "genre")
     private String genre;
-    @CsvBindByName(column = "release_date", required = true)
+    @CsvBindByName(column = "release_date")
     private short year;
-    @CsvBindByName(required = true)
+    @CsvBindByName(column = "lyrics", required = true)
     private String lyrics;
 
     public Song() {

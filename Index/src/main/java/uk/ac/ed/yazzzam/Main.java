@@ -11,17 +11,16 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        var documentsFile = new TextFileReader().readFile(args[0]);
-
         Long startIndexBuild = System.nanoTime();
 
         IndexBuilder ib = new IndexBuilder();
-        ib.preprocess_documents(documentsFile);
+
+        ib.preprocess_documents(args[0]);
+
 
         Long endIndexBuild = System.nanoTime();
 
         System.out.println("building index took: " + getTimeSeconds(startIndexBuild, endIndexBuild)+ " seconds");
-
 
         var invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
 
