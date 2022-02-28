@@ -4,25 +4,34 @@ import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.Indexer.TextFileReader;
+import uk.ac.ed.yazzzam.disk.BinaryProximityIndexWriter;
 import uk.ac.ed.yazzzam.index.InvertedIndex;
 import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
 
 import java.io.IOException;
+import java.util.stream.StreamSupport;
+
+import static spark.Spark.get;
 
 public class Main {
+
+    public static InvertedIndex invertedIndex;
+
     public static void main(String[] args) throws IOException {
         Long startIndexBuild = System.nanoTime();
 
         IndexBuilder ib = new IndexBuilder();
 
-        ib.preprocess_documents(args[0]);
-
+        ib.preprocess_documents(args[0], null);
 
         Long endIndexBuild = System.nanoTime();
+        invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
 
         System.out.println("building index took: " + getTimeSeconds(startIndexBuild, endIndexBuild)+ " seconds");
 
-        var invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
+        new BinaryProximityIndexWriter().writeToFile(invertedIndex, "test");
+
+        testSearch("I feel under your command");
 
 //        var similarity = new SimilaritySearch(invertedIndex.inverted_index.keySet()); // to test change visibility of MapBasedInvertedIndex.invertedIndex to public
 
@@ -51,9 +60,14 @@ public class Main {
 //        Long endSearch = System.nanoTime();
 //
 //        System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch)+ " seconds");
+        get("/hello", (request, response) -> {
+            var query = request.queryParams("song");
+            testSearch(query);
+            return "thanks for using lol";
+        });
     }
 
-    private static void testSearch(String query, InvertedIndex invertedIndex) {
+    private static void testSearch(String query) {
         var prec = new BasicPreprocessor();
         var q = prec.preprocess(query);
         var res = PhraseSearch.Search(q, invertedIndex);
