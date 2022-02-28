@@ -12,6 +12,7 @@ public class PhraseSearch {
     public static HashSet<Integer> Search(List<String> words, InvertedIndex index) {
         var postingLists = new ArrayList<ProximityPostingListIterator>();
         for (String word: words) {
+            System.out.println(word);
             postingLists.add(index.getPostingList(word));
         }
         return getRelevantDocuments(postingLists);

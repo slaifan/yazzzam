@@ -4,12 +4,17 @@ import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.Indexer.TextFileReader;
+import uk.ac.ed.yazzzam.Server.ServerApplication;
 import uk.ac.ed.yazzzam.index.InvertedIndex;
 import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.stream.StreamSupport;
 
 public class Main {
+
+    private static InvertedIndex invertedIndex;
     public static void main(String[] args) throws IOException {
         var documentsFile = new TextFileReader().readFile(args[0]);
 
@@ -23,7 +28,23 @@ public class Main {
         System.out.println("building index took: " + getTimeSeconds(startIndexBuild, endIndexBuild)+ " seconds");
 
 
-        var invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
+        invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
+
+        StreamSupport.stream(invertedIndex.getTermSpliterator(), false).forEachOrdered(System.out::println);
+
+//        System.out.println(invertedIndex.getPostingList());
+        var prec = new BasicPreprocessor();
+        var q = prec.preprocess("I have");
+
+        System.out.println(PhraseSearch.Search(q, invertedIndex));
+        System.out.println(PhraseSearch.Search(q, invertedIndex));
+
+        System.out.println(PhraseSearch.Search(q, invertedIndex));
+
+        System.out.println(PhraseSearch.Search(q, invertedIndex));
+
+
+        ServerApplication.main(new String[]{});
 
 //        var similarity = new SimilaritySearch(invertedIndex.inverted_index.keySet()); // to test change visibility of MapBasedInvertedIndex.invertedIndex to public
 
@@ -54,11 +75,18 @@ public class Main {
 //        System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch)+ " seconds");
     }
 
-    private static void testSearch(String query, InvertedIndex invertedIndex) {
+
+    public static HashSet<Integer> testSearch(String query) {
         var prec = new BasicPreprocessor();
         var q = prec.preprocess(query);
+        System.out.println(q);
+
+        System.out.println(invertedIndex);
+
+        StreamSupport.stream(invertedIndex.getTermSpliterator(), false).forEachOrdered(System.out::println);
+
         var res = PhraseSearch.Search(q, invertedIndex);
-        System.out.println(res);
+        return res;
     }
 
     private static Double getTimeSeconds(Long start, Long end) {

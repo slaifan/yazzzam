@@ -16,8 +16,8 @@ public class IndexBuilder {
 		songID_to_lyrics = new HashMap<>();
 	}
 	
-	private Preprocessor preprocessor = new FullProcessor("englishST.txt");
-//	private Preprocessor preprocessor = new BasicPreprocessor();
+//	private Preprocessor preprocessor = new FullProcessor("englishST.txt");
+	private Preprocessor preprocessor = new BasicPreprocessor();
 	
 	
 	
