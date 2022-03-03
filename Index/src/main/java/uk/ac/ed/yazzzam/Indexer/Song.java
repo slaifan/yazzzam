@@ -11,7 +11,7 @@ public class Song {
     @CsvBindByName(column = "genre")
     private String genre;
     @CsvBindByName(column = "release_date")
-    private short year;
+    private int year;
     @CsvBindByName(column = "lyrics", required = true)
     private String lyrics;
 
@@ -23,7 +23,7 @@ public class Song {
         lyrics="";
     }
 
-    public Song(String title, String artist, String genre, short year, String lyrics){
+    public Song(String title, String artist, String genre, int year, String lyrics){
 
         this.title = title;
         this.artist = artist;
@@ -44,7 +44,7 @@ public class Song {
         return genre;
     }
 
-    public short getYear() {
+    public int getYear() {
         return year;
     }
 
@@ -64,7 +64,7 @@ public class Song {
         this.genre = genre;
     }
 
-    public void setYear(short year) {
+    public void setYear(int year) {
         this.year = year;
     }
 
