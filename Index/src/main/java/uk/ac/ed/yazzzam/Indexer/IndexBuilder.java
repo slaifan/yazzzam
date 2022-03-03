@@ -1,6 +1,7 @@
 package uk.ac.ed.yazzzam.Indexer;
 
 import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
+import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
 import java.util.*;
@@ -12,8 +13,8 @@ public class IndexBuilder {
 	
 	public IndexBuilder() {
 		//TODO: optimize full processor
-		//preprocessor = new FullProcessor("englishST.txt");
-		preprocessor = new BasicPreprocessor();
+		preprocessor = new FullProcessor("englishST.txt");
+		//preprocessor = new BasicPreprocessor();
 	}
 
 	public void preprocessSong(Song song) {
