@@ -4,25 +4,23 @@ import opennlp.tools.stemmer.PorterStemmer;
 import uk.ac.ed.yazzzam.Indexer.Reader;
 import uk.ac.ed.yazzzam.Indexer.TextFileReader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class FullProcessor implements Preprocessor {
 
 
-	private String stopWordsFileName;
-	private PorterStemmer ps = new PorterStemmer();
-	private Reader r = new TextFileReader();
-	
-	
+	private PorterStemmer ps;
+	private Reader r;
+	Set<String> stopwords;
+
 	public FullProcessor(String stopWordsFileName)  {
-		this.stopWordsFileName = stopWordsFileName;
+		ps = new PorterStemmer();
+		r = new TextFileReader();
+		this.stopwords = new HashSet<>(Arrays.asList(r.readFile(stopWordsFileName).split(" ")));
 	}
-	
-	
-	
+
+
 	
 	// Tokenizes a string at every non-alphanumeric character
 	private List<String> tokenize(String document) {
@@ -45,22 +43,16 @@ public class FullProcessor implements Preprocessor {
 	
 	// Stopping
 	private ArrayList<String> removeStopWords(List<String> tokens) {
-		var stopwords = Arrays.asList(r.readFile(stopWordsFileName).split(" "));
-		
-		for (String word: stopwords) {
-			tokens.removeAll(Collections.singleton(word));
-		}
-		
+
+		tokens.removeIf(t -> stopwords.contains(t));
 		return (ArrayList<String>) tokens;
 	}
 	
 	
 	private List<String> stem(ArrayList<String> tokens){
-		
 		for (int i = 0; i < tokens.size(); i++) {
 			tokens.set(i, ps.stem(tokens.get(i)));
 		}
-		
 		return tokens;
 	}
 
