@@ -37,6 +37,7 @@ public class Main {
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
         //System.out.println(idx);
+        //System.out.println(ib.getDocLengths());
 
         //var invertedIndex = new ProximityInvertedIndex(idx);
 

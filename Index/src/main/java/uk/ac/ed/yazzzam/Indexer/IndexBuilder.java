@@ -1,6 +1,5 @@
 package uk.ac.ed.yazzzam.Indexer;
 
-import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
@@ -9,11 +8,13 @@ import java.util.*;
 public class IndexBuilder {
 
 	private Preprocessor preprocessor;
-	private Map<String, TermData> index = new HashMap<>();
+	private Map<String, TermData> index;
+	private Map<Integer, Integer> docslengths;
 	
 	public IndexBuilder() {
-		//TODO: optimize full processor
 		preprocessor = new FullProcessor("englishST.txt");
+		index = new HashMap<>();
+		docslengths = new HashMap<>();
 		//preprocessor = new BasicPreprocessor();
 	}
 
@@ -28,8 +29,14 @@ public class IndexBuilder {
 		return index;
 	}
 
+	public Map<Integer, Integer> getDocLengths(){
+		return docslengths;
+	}
+
 	public void indexSong(int i, Song song) {
-		for (var j = 0; j < song.getPreprocessedLyrics().size(); j++){
+		var docSize = song.getPreprocessedLyrics().size();
+		docslengths.put(i, docSize);
+		for (var j = 0; j < docSize; j++){
 			var term = song.getPreprocessedLyrics().get(j);
 			var termData = index.getOrDefault(term, new TermData());
 			termData.setDf(termData.getDf()+1);

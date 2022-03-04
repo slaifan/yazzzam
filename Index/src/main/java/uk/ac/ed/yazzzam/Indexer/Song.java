@@ -28,16 +28,6 @@ public class Song {
         preprocessedLyrics= new ArrayList<>();
     }
 
-    public Song(String title, String artist, String genre, short year, String lyrics, List<String> preprocessedLyrics){
-
-        this.title = title;
-        this.artist = artist;
-        this.genre = genre;
-        this.year = year;
-        this.lyrics = lyrics;
-        this.preprocessedLyrics = preprocessedLyrics;
-    }
-
     public String getTitle() {
         return title;
     }
