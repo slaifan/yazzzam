@@ -3,6 +3,8 @@ package uk.ac.ed.yazzzam;
 import uk.ac.ed.yazzzam.Indexer.CSVReader;
 import uk.ac.ed.yazzzam.Indexer.Song;
 import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
+import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
+import uk.ac.ed.yazzzam.Ranker.BM25;
 import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.index.InvertedIndex;
@@ -36,6 +38,16 @@ public class Main {
 
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
+        var preprocessor = new FullProcessor("englishST.txt");
+
+        var ranker = new BM25(ib);
+        var q1 = "laptop in my back pocket";
+        var prec_q = preprocessor.preprocess(q1);
+        var out = ranker.score(prec_q);
+        System.out.println(out);
+
+
+
         //System.out.println(idx);
         //System.out.println(ib.getDocLengths());
 
@@ -70,12 +82,6 @@ public class Main {
 //        System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch)+ " seconds");
     }
 
-    private static void testSearch(String query, InvertedIndex invertedIndex) {
-        var prec = new BasicPreprocessor();
-        var q = prec.preprocess(query);
-        var res = PhraseSearch.Search(q, invertedIndex);
-        System.out.println(res);
-    }
 
     private static Double getTimeSeconds(Long start, Long end) {
         Long durationNano = end - start;
