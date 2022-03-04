@@ -8,9 +8,8 @@ import com.opencsv.bean.CsvToBeanBuilder;
 public class CSVReader {
 
     public static List readFile(String fileName) throws FileNotFoundException {
-        //Pattern pattern = Pattern.compile();
-        var songs = new CsvToBeanBuilder(new FileReader(fileName))
-                .withType(Song.class).build().parse();
+        var songs = new CsvToBeanBuilder(new InputStreamReader(CSVReader.class.getClassLoader().getResourceAsStream(fileName)))
+                .withSeparator('\t').withType(Song.class).build().parse();
         return songs;
     }
 }
