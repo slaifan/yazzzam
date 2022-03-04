@@ -9,6 +9,8 @@ import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.index.InvertedIndex;
 import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
+import java.util.Scanner;
+
 
 import java.io.IOException;
 import java.util.ListIterator;
@@ -38,16 +40,25 @@ public class Main {
 
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
-        var preprocessor = new FullProcessor("englishST.txt");
-
+        var preprocessor = new BasicPreprocessor();
         var ranker = new BM25(ib);
-        var q1 = "laptop in my back pocket";
-        var prec_q = preprocessor.preprocess(q1);
-        var out = ranker.score(prec_q);
-        System.out.println(out);
+        Scanner keyboard = new Scanner(System.in);
+        while (true) {
+            System.out.println("enter lyrics");
+            var q1 = keyboard.nextLine();
+            Long startSearch = System.nanoTime();
+
+            var prec_q = preprocessor.preprocess(q1);
+            var out = ranker.score(prec_q);
+            System.out.println(out);
+            System.out.println(ib.getTitle(out));
 
 
+            Long endSearch = System.nanoTime();
 
+            System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch) + " seconds");
+
+        }
         //System.out.println(idx);
         //System.out.println(ib.getDocLengths());
 

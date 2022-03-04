@@ -6,9 +6,9 @@ import java.util.*;
 
 public class BM25 {
 
-    private double k1 = 1.5;
+    private double k1 = 1.0;
     private double epsilon = 0.25;
-    private double b = 0.75;
+    private double b = 0.0;
 
     private IndexBuilder ib;
 
@@ -29,8 +29,8 @@ public class BM25 {
 
     }
 
-    public BM25(IndexBuilder ib) {
-        ib = ib;
+    public BM25(IndexBuilder ib_) {
+        ib = ib_;
 
         N = ib.getDocLengths().size();
         avgIdf = getAvgIdf();
@@ -41,9 +41,10 @@ public class BM25 {
     public int score(List<String> query) {
         var best_score = 0.0;
         var res = 0;
+
         for (int i = 0; i < N; i++) {
             var doc_score = scoreDocument(query, i);
-            if (doc_score > best_score) {
+            if (doc_score >= best_score) {
                 best_score = doc_score;
                 res = i;
             }
@@ -53,15 +54,34 @@ public class BM25 {
 
     private double scoreDocument(List<String> query, int document) {
         var index = ib.getIndex();
-        var score = 0;
+        double score = 0.0;
         for (int i = 0; i < query.size(); i++) {
             var word = query.get(i);
-            var f_qd = index.get(word).getPostingsList().size(); // how many docs the word occurred in
-            var bdlen = b * (ib.getDocLengths().get(i) / avgDocLen);
-            var formula = (f_qd * k1 + 1)/(f_qd + k1 * (1 - b + bdlen));
-            var word_score = idf(word) * formula;
+            var doc_freq = index.get(word).getPostingsList().get(document);
+            int f_qd;
 
+            if (doc_freq != null) {
+                f_qd = doc_freq.getTf();
+            }
+            else {
+                f_qd = 0;
+            }
+
+            double bdlen = b * ((double)ib.getDocLengths().get(document) / avgDocLen);
+
+            double formula = (f_qd * (k1 + 1))/(f_qd + k1 * (1 - b + bdlen));
+
+            double word_score = idf(word) * formula;
             score += word_score;
+//            if (document == 63821) {
+//                System.out.println(ib.getTitle(63821));
+//                System.out.println(bdlen);
+                System.out.println("score for " + word + ": " + word_score);
+//            }
+        }
+        if (score > 0.0) {
+            System.out.println(ib.getTitle(document));
+            System.out.println(score);
         }
         return score;
     }
@@ -87,8 +107,13 @@ public class BM25 {
 
     private double idf(String word) {
         var q = ib.getIndex().get(word).getDf();
-        var idf = Math.log(N - q + 0.5) - Math.log(q + 0.5);
-        return idf >= 0? idf : (epsilon * avgIdf);
+        var idf = Math.log((N - q + 0.5 / Math.log(q + 0.5)) + 1);
+        if (idf >= 0) {
+            return idf;
+        }
+        return epsilon * avgIdf;
     }
+
+
     
 }
