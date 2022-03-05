@@ -40,7 +40,7 @@ public class Main {
 
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
-        var preprocessor = new BasicPreprocessor();
+        var preprocessor = new FullProcessor("englishST.txt");
         var ranker = new BM25(ib);
         Scanner keyboard = new Scanner(System.in);
         while (true) {
@@ -50,11 +50,12 @@ public class Main {
 
             var prec_q = preprocessor.preprocess(q1);
             var out = ranker.score(prec_q);
-            System.out.println(out);
-            System.out.println(ib.getTitle(out));
-
-
             Long endSearch = System.nanoTime();
+            for (int j = 0; j < out.size(); j++) {
+                System.out.println(j + " - " + ib.getTitle(out.get(j).docId));
+            }
+
+
 
             System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch) + " seconds");
 
