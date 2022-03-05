@@ -60,6 +60,17 @@ public class Sql2oModel implements Model{
         }
     }
 
+    private boolean existSongTitle(String title){
+        try(Connection conn = sql2o.open()){
+            List<SongData> songs = conn.createQuery("select * from songs where title = :title")
+                    .addParameter("song", title)
+                    .executeAndFetch(SongData.class);
+
+            return songs.size() > 0;
+        }
+    }
+
+
     public List<String> getAllTitles(){
         String sql = "SELECT title FROM songs";
         try (Connection conn = sql2o.open()) {
@@ -135,6 +146,29 @@ public class Sql2oModel implements Model{
                         .addParameter("lyrics", songs.get(i).getLyrics())
                         .addToBatch();
             }
+            query.executeBatch();
+            conn.commit();
+        }
+        return "Success!";
+    }
+
+    public String insertSong(int id, Song song){
+        if (existSongTitle(song.getTitle())) {
+            return "song exists already";
+        }
+
+        final String sql = "insert into songs(id, title, artist, genre, year, lyrics) VALUES (:id, :title, :artist, :genre, :year, :lyrics)";
+
+        try (Connection conn = sql2o.beginTransaction()){
+            Query query = conn.createQuery(sql);
+
+            query.addParameter("id", id)
+                    .addParameter("title", song.getTitle())
+                    .addParameter("artist", song.getArtist())
+                    .addParameter("genre", song.getGenre())
+                    .addParameter("year", song.getYear())
+                    .addParameter("lyrics", song.getLyrics())
+                    .addToBatch();
             query.executeBatch();
             conn.commit();
         }
