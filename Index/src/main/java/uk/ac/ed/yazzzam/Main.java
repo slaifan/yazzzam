@@ -33,13 +33,13 @@ public class Main {
         }
 
         Long endProcessDocs = System.nanoTime();
-
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
-        //System.out.println(idx);
-        //System.out.println(ib.getDocLengths());
+//        var idx = ib.getIndex();
+//        System.out.println(idx);
+//        System.out.println(ib.getDocLengths());
 
-        //var invertedIndex = new ProximityInvertedIndex(idx);
+//        var invertedIndex = new ProximityInvertedIndex(idx);
 
 //        var similarity = new SimilaritySearch(invertedIndex.inverted_index.keySet()); // to test change visibility of MapBasedInvertedIndex.invertedIndex to public
 

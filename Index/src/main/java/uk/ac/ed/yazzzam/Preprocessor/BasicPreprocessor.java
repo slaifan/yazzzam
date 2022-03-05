@@ -9,6 +9,11 @@ public class BasicPreprocessor implements Preprocessor {
         return Arrays.asList(tokenize(caseFold(text)));
     }
 
+    @Override
+    public List<String> preprocess(String text, String wordReducAlg) {
+        return null;
+    }
+
     private String caseFold(String text) {
         return text.toLowerCase();
     }
