@@ -1,5 +1,18 @@
 # ide files
 /Index/.idea
+/Index/yazzzam.iml
+/Index/src/main/java/uk/ac/ed/yazzzam/yazzzam.iml
+/Index/src/main/java/uk/ac/ed/yazzzam/.idea
 
 # temp build files
 /Index/index
+/Index/target
+
+#postgres jdbc
+postgresql-42.3.3.jar
+
+#resources
+/Index/src/main/resources
+
+#logs
+Index/hs_*

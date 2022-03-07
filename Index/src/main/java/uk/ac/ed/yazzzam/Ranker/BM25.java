@@ -10,7 +10,7 @@ public class BM25 {
     private double epsilon = 0.25;
     private double b = 0.75;
 
-    private IndexBuilder ib;
+    protected IndexBuilder ib;
 
     private double avgIdf;
     private int N;
@@ -38,12 +38,12 @@ public class BM25 {
 
     }
 
-    public ArrayList<SearchResult> score(List<String> query) {
-        PriorityQueue<SearchResult> results = new PriorityQueue<>();
-        var res = new ArrayList<SearchResult>();
+    public ArrayList<ScoringResult> score(List<String> query) {
+        PriorityQueue<ScoringResult> results = new PriorityQueue<>();
+        var res = new ArrayList<ScoringResult>();
         for (int i = 0; i < N; i++) {
             var doc_score = scoreDocument(query, i);
-            results.add(new SearchResult(i, doc_score));
+            results.add(new ScoringResult(i, doc_score));
         }
 
         for (int i = 0; i < 100; i++) {
@@ -73,12 +73,7 @@ public class BM25 {
 
             double word_score = idf(word) * formula;
             score += word_score;
-//            System.out.println("score for " + word + ": " + word_score);
         }
-//        if (score > 0.0) {
-//            System.out.println(ib.getTitle(document));
-//            System.out.println(score);
-//        }
         return score;
     }
 
