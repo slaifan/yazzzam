@@ -1,7 +1,6 @@
 package uk.ac.ed.yazzzam.Indexer;
 
 import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
-import uk.ac.ed.yazzzam.Preprocessor.FullPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
 import java.util.HashMap;
@@ -20,11 +19,11 @@ public class IndexBuilder {
 		preprocessor = new BasicPreprocessor();
 	}
 
-	public IndexBuilder(String stopwordsFile) {
+	public IndexBuilder(Preprocessor prec) {
 		index = new HashMap<>();
 		docslengths = new HashMap<>();
 		titles = new HashMap<>();
-		preprocessor = new FullPreprocessor(stopwordsFile);
+		preprocessor = prec;
 	}
 
 	public void preprocessSong(Song song) {

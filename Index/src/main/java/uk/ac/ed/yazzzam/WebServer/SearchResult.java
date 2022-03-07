@@ -1,6 +1,6 @@
 package uk.ac.ed.yazzzam.WebServer;
 
-import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
+import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Ranker.ScoringResult;
 
 public class SearchResult {
@@ -9,9 +9,9 @@ public class SearchResult {
     private double score;
 //    private List<String> excerpt;
 
-    public SearchResult(ScoringResult sr, IndexBuilder ib) {
+    public SearchResult(ScoringResult sr) {
         songId = sr.docId;
-        songTitle = ib.getTitle(songId);
+        songTitle = GlobalSettings.getIndex().getTitle(songId);
         score = sr.score;
 //        excerpt = new ArrayList<String>() {" "  + songTitle};
     }

@@ -1,42 +1,35 @@
 package uk.ac.ed.yazzzam.Ranker;
 
+import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 
 import java.util.*;
 
-public class BM25 {
+public class BM25 implements Ranker{
 
-    private double k1 = 1.5;
-    private double epsilon = 0.25;
-    private double b = 0.75;
+    private double k1;
+    private double epsilon;
+    private double b;
+    private double n;
 
-    protected IndexBuilder ib;
+    protected IndexBuilder ib = GlobalSettings.getIndex();
 
     private double avgIdf;
     private int N;
     private double avgDocLen;
 
-    public BM25(double k1, double epsilon, double b, IndexBuilder ib) {
-        k1 = k1;
-        epsilon = epsilon;
-        b = b;
-
-        ib = ib;
-
-        N = ib.getDocLengths().size();
-        avgIdf = getAvgIdf();
-        avgDocLen = getAvgDocLen();
-
-    }
-
-    public BM25(IndexBuilder ib_) {
-        ib = ib_;
+    public BM25(double k1_, double epsilon_, double b_, int n_) {
+        k1 = k1_;
+        epsilon = epsilon_;
+        b = b_;
+        n = n_;
 
         N = ib.getDocLengths().size();
         avgIdf = getAvgIdf();
         avgDocLen = getAvgDocLen();
 
     }
+
 
     public ArrayList<ScoringResult> score(List<String> query) {
         PriorityQueue<ScoringResult> results = new PriorityQueue<>();
@@ -46,7 +39,7 @@ public class BM25 {
             results.add(new ScoringResult(i, doc_score));
         }
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < n; i++) {
             res.add(results.poll());
         }
         return res;
@@ -84,7 +77,7 @@ public class BM25 {
             var q = index.get(word).getDf();
             idf += Math.log(N - q + 0.5) - Math.log(q + 0.5);
         }
-        return idf / index.size();
+        return idf / (index.size() + 1);
     }
 
     private double getAvgDocLen() {
@@ -93,7 +86,7 @@ public class BM25 {
         for (Integer docLen : docLengths.values()) {
             totalDocLens += docLen;
         }
-        return  totalDocLens / docLengths.size();
+        return  totalDocLens / (docLengths.size() + 1);
     }
 
     private double idf(String word) {
