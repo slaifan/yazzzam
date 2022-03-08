@@ -60,7 +60,11 @@ public class Sql2oModel implements Model{
         }
     }
 
+<<<<<<< HEAD
     private boolean existSongTitle(String title){
+=======
+    public boolean existSongTitle(String title){
+>>>>>>> f492118 (proximity bm25 and delete spring boot)
         try(Connection conn = sql2o.open()){
             List<SongData> songs = conn.createQuery("select * from songs where title = :title")
                     .addParameter("song", title)
@@ -152,6 +156,7 @@ public class Sql2oModel implements Model{
         return "Success!";
     }
 
+<<<<<<< HEAD
     public String insertSong(int id, Song song){
         if (existSongTitle(song.getTitle())) {
             return "song exists already";
@@ -174,6 +179,8 @@ public class Sql2oModel implements Model{
         }
         return "Success!";
     }
+=======
+>>>>>>> f492118 (proximity bm25 and delete spring boot)
 
 
 

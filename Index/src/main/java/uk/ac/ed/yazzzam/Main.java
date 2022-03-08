@@ -3,32 +3,28 @@ package uk.ac.ed.yazzzam;
 import uk.ac.ed.yazzzam.Indexer.CSVReader;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.Indexer.Song;
-<<<<<<< HEAD
 import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
+import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 import uk.ac.ed.yazzzam.Ranker.BM25;
+import uk.ac.ed.yazzzam.Ranker.BM25Proximity;
+import uk.ac.ed.yazzzam.Ranker.ScoringResult;
+import uk.ac.ed.yazzzam.WebServer.JsonTransformer;
+import uk.ac.ed.yazzzam.WebServer.SearchResult;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.ListIterator;
-=======
-import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
-import uk.ac.ed.yazzzam.Search.PhraseSearch;
-import uk.ac.ed.yazzzam.database.ConnectDB;
-import uk.ac.ed.yazzzam.database.Sql2oModel;
-import uk.ac.ed.yazzzam.disk.BinaryProximityIndexWriter;
-import uk.ac.ed.yazzzam.index.InvertedIndex;
-import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
-
-import java.io.IOException;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import static spark.Spark.get;
+
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
 
         Long startIndexBuild = System.nanoTime();
-        ListIterator<Song> songsIter = CSVReader.readFile(args[0]).listIterator();
+        ListIterator<Song> songsIter = CSVReader.readFile("test_song01.csv").listIterator();
         Long endStoreDocs = System.nanoTime();
         System.out.println("storing documents into objects took: " + getTimeSeconds(startIndexBuild, endStoreDocs) + " seconds");
         System.out.println(memoryState());
@@ -48,7 +44,22 @@ public class Main {
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
 
-        get("/hello", (req, res) -> "Hello, World!");
+        var preprocessor = new FullPreprocessor("englishST.txt");
+        var ranker = new BM25Proximity(ib, 50);
+//        var ranker = new BM25(ib);
+
+//        var query = "i love the way you lie";
+//        Long startSearch = System.nanoTime();
+//        var res =  testSearch(query, preprocessor, ranker, ib);
+//        Long endSearch = System.nanoTime();
+//        System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch)+ " seconds");
+//        System.out.println(res.stream().map(e -> new SearchResult(e, ib)).collect(Collectors.toList()));
+
+        get("/search", (request, response) -> {
+            var query = request.queryParams("lyrics");
+            var res =  testSearch(query, preprocessor, ranker, ib);
+            return res.stream().map(e -> new SearchResult(e, ib)).collect(Collectors.toList());
+        }, new JsonTransformer());
 
         var preprocessor = new FullProcessor("englishST.txt");
 
@@ -60,6 +71,15 @@ public class Main {
     }
 
 
+    private static ArrayList<ScoringResult> testSearch(String query, Preprocessor prec, BM25 ranker, IndexBuilder ib) {
+        var q = prec.preprocess(query);
+        var res = ranker.score(q);
+        ArrayList<String> out = new ArrayList<>();
+        for (int i = 0; i < res.size(); i++) {
+            out.add(i + " - " + ib.getTitle(res.get(i).docId));
+        }
+        return res;
+    }
 
     private static Double getTimeSeconds(Long start, Long end) {
         Long durationNano = end - start;
