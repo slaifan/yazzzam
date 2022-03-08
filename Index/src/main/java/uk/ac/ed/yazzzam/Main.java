@@ -8,16 +8,32 @@ import uk.ac.ed.yazzzam.Ranker.BM25;
 
 import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
+<<<<<<< HEAD
+=======
+import uk.ac.ed.yazzzam.Indexer.TextFileReader;
+import uk.ac.ed.yazzzam.disk.BinaryProximityIndexWriter;
+>>>>>>> b423f5c (Working SPARK!)
 import uk.ac.ed.yazzzam.index.InvertedIndex;
 import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
 import java.util.Scanner;
 
 
 import java.io.IOException;
+<<<<<<< HEAD
 import java.util.ListIterator;
 
 public class Main {
 
+=======
+import java.util.stream.StreamSupport;
+
+import static spark.Spark.get;
+
+public class Main {
+
+    public static InvertedIndex invertedIndex;
+
+>>>>>>> b423f5c (Working SPARK!)
     public static void main(String[] args) throws IOException {
 
         Long startIndexBuild = System.nanoTime();
@@ -44,6 +60,7 @@ public class Main {
 
         var preprocessor = new FullProcessor("englishST.txt");
 
+<<<<<<< HEAD
 
         var ranker = new BM25(ib);
         Scanner keyboard = new Scanner(System.in);
@@ -67,6 +84,58 @@ public class Main {
         //System.out.println(idx);
         //System.out.println(ib.getDocLengths());
 
+=======
+        ib.preprocess_documents(args[0], null);
+
+        Long endIndexBuild = System.nanoTime();
+        invertedIndex = new ProximityInvertedIndex(ib.buildIndex());
+
+        System.out.println("building index took: " + getTimeSeconds(startIndexBuild, endIndexBuild)+ " seconds");
+
+        new BinaryProximityIndexWriter().writeToFile(invertedIndex, "test");
+
+        testSearch("I feel under your command");
+
+//        var similarity = new SimilaritySearch(invertedIndex.inverted_index.keySet()); // to test change visibility of MapBasedInvertedIndex.invertedIndex to public
+
+//        var indexWriter = new BinaryProximityIndexWriter();
+//        indexWriter.writeToFile(invertedIndex, "test");
+//
+//        var indexDiskReader = new FullPostingListDiskReader();
+//        var reconstructedInvertedIndex = new CompressedProximityInvertedIndex(indexDiskReader.readAll("index/test.ii"));
+//
+//        indexWriter.writeToFile(reconstructedInvertedIndex, "test2");
+
+//        var x = invertedIndex.getPostingList("my");
+//        System.out.println(x);
+//        var q1 = "laptop in my back pocket";
+//        var q2 = "I";
+//        var q3 = "I have something in my pocket";
+//
+//        Long startSearch = System.nanoTime();
+//
+//        System.out.println(similarity.findSimilarWords("odin", 2));
+//
+//        testSearch(q1, invertedIndex);
+//        testSearch(q2, invertedIndex);
+//        testSearch(q3, invertedIndex);
+//
+//        Long endSearch = System.nanoTime();
+//
+//        System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch)+ " seconds");
+        get("/hello", (request, response) -> {
+            var query = request.queryParams("song");
+            testSearch(query);
+            return "thanks for using lol";
+        });
+    }
+
+    private static void testSearch(String query) {
+        var prec = new BasicPreprocessor();
+        var q = prec.preprocess(query);
+        var res = PhraseSearch.Search(q, invertedIndex);
+        System.out.println(res);
+>>>>>>> b423f5c (Working SPARK!)
     }
 
 

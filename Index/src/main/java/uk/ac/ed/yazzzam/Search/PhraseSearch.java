@@ -40,6 +40,7 @@ public class PhraseSearch {
                         break;
                     }
                     if (lst.getCurrentDocument() == goal && i == postingLists.size() - 1) {
+                        System.out.println("Inspecting doc: " + lst.getCurrentDocument());
                         if (phraseExists(postingLists)) {
                             res.add(goal);
                         }

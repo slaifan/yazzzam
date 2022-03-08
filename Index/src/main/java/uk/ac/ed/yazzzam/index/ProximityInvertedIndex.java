@@ -1,6 +1,8 @@
 package uk.ac.ed.yazzzam.index;
 
+import uk.ac.ed.yazzzam.index.postinglists.EmptyPostingList;
 import uk.ac.ed.yazzzam.index.postinglists.ProximityPostingList;
+import uk.ac.ed.yazzzam.index.postinglists.ProximityPostingListIterator;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,10 @@ public class ProximityInvertedIndex extends MapBasedInvertedIndex {
     }
 
     @Override
-    public ProximityPostingList getPostingList(String term) {
+    public ProximityPostingListIterator getPostingList(String term) {
+        if (!inverted_index.containsKey(term)) {
+            return new EmptyPostingList();
+        }
         return new ProximityPostingList(term, inverted_index.get(term));
     }
 }
