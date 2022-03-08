@@ -3,11 +3,25 @@ package uk.ac.ed.yazzzam;
 import uk.ac.ed.yazzzam.Indexer.CSVReader;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.Indexer.Song;
+<<<<<<< HEAD
 import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Ranker.BM25;
 
 import java.io.IOException;
 import java.util.ListIterator;
+=======
+import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
+import uk.ac.ed.yazzzam.Search.PhraseSearch;
+import uk.ac.ed.yazzzam.database.ConnectDB;
+import uk.ac.ed.yazzzam.database.Sql2oModel;
+import uk.ac.ed.yazzzam.disk.BinaryProximityIndexWriter;
+import uk.ac.ed.yazzzam.index.InvertedIndex;
+import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
+
+import java.io.IOException;
+import java.util.List;
+
+import static spark.Spark.get;
 
 public class Main {
 
@@ -34,6 +48,7 @@ public class Main {
         System.out.println("processing and indexing took: " + getTimeSeconds(startProcessDocs, endProcessDocs) + " seconds");
         System.out.println(memoryState());
 
+        get("/hello", (req, res) -> "Hello, World!");
 
         var preprocessor = new FullProcessor("englishST.txt");
 
