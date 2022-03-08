@@ -1,14 +1,10 @@
 package uk.ac.ed.yazzzam;
 
 import uk.ac.ed.yazzzam.Indexer.CSVReader;
+import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.Indexer.Song;
-import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Ranker.BM25;
-import uk.ac.ed.yazzzam.Search.PhraseSearch;
-import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
-import uk.ac.ed.yazzzam.index.InvertedIndex;
-import uk.ac.ed.yazzzam.index.ProximityInvertedIndex;
 
 import java.io.IOException;
 import java.util.ListIterator;
@@ -24,6 +20,7 @@ public class Main {
         System.out.println(memoryState());
 
         Long startProcessDocs = System.nanoTime();
+        IndexBuilder ib = new IndexBuilder();
         var i = 0;
         while (songsIter.hasNext()){
             var song = songsIter.next();
