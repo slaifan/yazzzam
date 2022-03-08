@@ -3,7 +3,7 @@ package uk.ac.ed.yazzzam;
 import uk.ac.ed.yazzzam.Indexer.CSVReader;
 import uk.ac.ed.yazzzam.Indexer.Song;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
-import uk.ac.ed.yazzzam.Ranker.BM25;
+import uk.ac.ed.yazzzam.Ranker.BM25Proximity;
 import uk.ac.ed.yazzzam.Ranker.Ranker;
 import uk.ac.ed.yazzzam.Ranker.ScoringResult;
 import uk.ac.ed.yazzzam.WebServer.JsonTransformer;
@@ -19,6 +19,7 @@ import static spark.Spark.get;
 public class Main {
     public static void main(String[] args) throws IOException {
         ListIterator<Song> songsIter = CSVReader.readFile(GlobalSettings.inputFile).listIterator();
+        System.out.println("finished reading csv");
         var i = 0;
         while (songsIter.hasNext()){
             var song = songsIter.next();
@@ -33,8 +34,8 @@ public class Main {
 
 
         //YAZAN CHANGE RANKER HERE
-        var ranker = new BM25(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n);
-//        var ranker = new BM25Proximity(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
+//        var ranker = new BM25(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n);
+        var ranker = new BM25Proximity(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
 
 
 
