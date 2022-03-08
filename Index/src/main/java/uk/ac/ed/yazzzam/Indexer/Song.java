@@ -2,7 +2,6 @@ package uk.ac.ed.yazzzam.Indexer;
 
 import com.opencsv.bean.CsvBindByName;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Song {
@@ -20,17 +19,7 @@ public class Song {
     private List<String> preprocessedLyrics;
 
     public Song() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        title = null;
-        artist=null;
-        genre=null;
-        year= 0;
-        lyrics=null;
-        preprocessedLyrics= new ArrayList<>();
-=======
-=======
->>>>>>> ranking-java
+
         title = "";
         artist="";
         genre="";
@@ -45,10 +34,6 @@ public class Song {
         this.genre = genre;
         this.year = year;
         this.lyrics = lyrics;
-<<<<<<< HEAD
->>>>>>> e1547c3 (integrated database)
-=======
->>>>>>> ranking-java
     }
 
     public String getTitle() {
