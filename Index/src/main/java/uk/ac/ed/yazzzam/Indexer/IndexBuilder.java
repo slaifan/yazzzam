@@ -1,16 +1,24 @@
 package uk.ac.ed.yazzzam.Indexer;
 
+import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
+
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class IndexBuilder {
-
 	private Preprocessor preprocessor;
 	private Map<String, TermData> index;
 	private Map<Integer, Integer> docslengths;
 	private Map<Integer, String> titles;
+
+	public IndexBuilder() {
+		index = new HashMap<>();
+		docslengths = new HashMap<>();
+		titles = new HashMap<>();
+		preprocessor = new BasicPreprocessor();
+	}
 
 	public IndexBuilder(Preprocessor prec) {
 		index = new HashMap<>();
@@ -39,7 +47,6 @@ public class IndexBuilder {
 		return titles.get(id);
 	}
 
-
 	public void indexSong(int i, Song song) {
 		var docSize = song.getPreprocessedLyrics().size();
 		docslengths.put(i, docSize);
@@ -56,9 +63,7 @@ public class IndexBuilder {
 			positions.add(j);
 			doc.setTf(doc.getTf()+1);
 			index.put(term, termData);
-
 		}
-
 	}
 }
 

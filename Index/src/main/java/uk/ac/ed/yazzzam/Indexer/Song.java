@@ -21,6 +21,7 @@ public class Song {
 
     public Song() {
 <<<<<<< HEAD
+<<<<<<< HEAD
         title = null;
         artist=null;
         genre=null;
@@ -28,6 +29,8 @@ public class Song {
         lyrics=null;
         preprocessedLyrics= new ArrayList<>();
 =======
+=======
+>>>>>>> ranking-java
         title = "";
         artist="";
         genre="";
@@ -42,7 +45,10 @@ public class Song {
         this.genre = genre;
         this.year = year;
         this.lyrics = lyrics;
+<<<<<<< HEAD
 >>>>>>> e1547c3 (integrated database)
+=======
+>>>>>>> ranking-java
     }
 
     public String getTitle() {

@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import static spark.Spark.get;
 
 public class Main {
-
     public static void main(String[] args) throws IOException {
         ListIterator<Song> songsIter = CSVReader.readFile(GlobalSettings.inputFile).listIterator();
         var i = 0;
@@ -30,13 +29,13 @@ public class Main {
         }
         System.out.println(memoryState());
 
-
         var preprocessor = GlobalSettings.getPreprocessor();
 
 
         //YAZAN CHANGE RANKER HERE
         var ranker = new BM25(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n);
 //        var ranker = new BM25Proximity(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
+
 
 
         get("/search", (request, response) -> {
@@ -65,7 +64,7 @@ public class Main {
         return (double) durationNano / 1_000_000_000;
     }
 
-    public static String memoryState(){
+    private static String memoryState(){
         int mb = 1024 * 1024;
         long heapSize = Runtime.getRuntime().totalMemory();
         long heapMaxSize = Runtime.getRuntime().maxMemory();
@@ -76,6 +75,5 @@ public class Main {
                 "\nheap free size: " + heapFreeSize/mb + "mb" +
                 "\nheap used: " + heapUsed/mb + "mb";
     }
-
 
 }

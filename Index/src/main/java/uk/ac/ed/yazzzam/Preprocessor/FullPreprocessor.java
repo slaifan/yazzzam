@@ -8,7 +8,7 @@ import uk.ac.ed.yazzzam.Indexer.TextFileReader;
 
 import java.util.*;
 
-public class FullProcessor implements Preprocessor {
+public class FullPreprocessor implements Preprocessor {
 
 
 	private PorterStemmer ps;
@@ -17,7 +17,7 @@ public class FullProcessor implements Preprocessor {
 	private Metaphone mp;
 	Set<String> stopwords;
 
-	public FullProcessor(String stopWordsFileName)  {
+	public FullPreprocessor(String stopWordsFileName)  {
 		ps = new PorterStemmer();
 		r = new TextFileReader();
 		sound = new Soundex();
