@@ -1,5 +1,19 @@
 # ide files
 /Index/.idea
+Index/Yazzzam.iml
+Index/src/main/java/uk/ac/ed/yazzzam/yazzzam.iml
+Index/src/main/java/uk/ac/ed/yazzzam/.idea/
 
 # temp build files
 /Index/index
+Index/target/
+
+# logs
+Index/hs_err_pid17300.log
+Index/hs_err_pid8576.log
+        
+# song data
+Index/src/main/resources/test_song01.csv
+Index/src/main/resources/test_song15.csv
+
+        
