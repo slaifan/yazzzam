@@ -6,9 +6,9 @@ import java.util.*;
 
 public class BM25 {
 
-    private double k1 = 1.0;
+    private double k1 = 1.5;
     private double epsilon = 0.25;
-    private double b = 0.0;
+    private double b = 0.75;
 
     private IndexBuilder ib;
 
@@ -38,16 +38,16 @@ public class BM25 {
 
     }
 
-    public int score(List<String> query) {
-        var best_score = 0.0;
-        var res = 0;
-
+    public ArrayList<SearchResult> score(List<String> query) {
+        PriorityQueue<SearchResult> results = new PriorityQueue<>();
+        var res = new ArrayList<SearchResult>();
         for (int i = 0; i < N; i++) {
             var doc_score = scoreDocument(query, i);
-            if (doc_score >= best_score) {
-                best_score = doc_score;
-                res = i;
-            }
+            results.add(new SearchResult(i, doc_score));
+        }
+
+        for (int i = 0; i < 100; i++) {
+            res.add(results.poll());
         }
         return res;
     }
@@ -73,16 +73,12 @@ public class BM25 {
 
             double word_score = idf(word) * formula;
             score += word_score;
-//            if (document == 63821) {
-//                System.out.println(ib.getTitle(63821));
-//                System.out.println(bdlen);
-                System.out.println("score for " + word + ": " + word_score);
-//            }
+//            System.out.println("score for " + word + ": " + word_score);
         }
-        if (score > 0.0) {
-            System.out.println(ib.getTitle(document));
-            System.out.println(score);
-        }
+//        if (score > 0.0) {
+//            System.out.println(ib.getTitle(document));
+//            System.out.println(score);
+//        }
         return score;
     }
 

@@ -14,8 +14,11 @@ public class IndexBuilder {
 	private Map<Integer, String> titles;
 	
 	public IndexBuilder() {
+
 		preprocessor = new FullProcessor("englishST.txt");
+
 		//preprocessor = new BasicPreprocessor();
+
 		index = new HashMap<>();
 		docslengths = new HashMap<>();
 		titles = new HashMap<>();
