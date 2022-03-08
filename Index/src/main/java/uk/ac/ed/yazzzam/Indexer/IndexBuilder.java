@@ -1,6 +1,5 @@
 package uk.ac.ed.yazzzam.Indexer;
 
-import uk.ac.ed.yazzzam.Preprocessor.FullProcessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
 import java.util.HashMap;
@@ -12,17 +11,12 @@ public class IndexBuilder {
 	private Map<String, TermData> index;
 	private Map<Integer, Integer> docslengths;
 	private Map<Integer, String> titles;
-	
-	public IndexBuilder() {
 
-		preprocessor = new FullProcessor("englishST.txt");
-
-		//preprocessor = new BasicPreprocessor();
-
+	public IndexBuilder(Preprocessor prec) {
 		index = new HashMap<>();
 		docslengths = new HashMap<>();
 		titles = new HashMap<>();
-
+		preprocessor = prec;
 	}
 
 	public void preprocessSong(Song song) {
