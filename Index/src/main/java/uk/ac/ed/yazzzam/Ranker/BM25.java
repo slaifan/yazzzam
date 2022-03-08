@@ -34,6 +34,8 @@ public class BM25 implements Ranker{
     public ArrayList<ScoringResult> score(List<String> query) {
         PriorityQueue<ScoringResult> results = new PriorityQueue<>();
         var res = new ArrayList<ScoringResult>();
+        System.out.println("num docs is " + N);
+        System.out.println("index size is " + ib.getIndex().size());
         for (int i = 0; i < N; i++) {
             var doc_score = scoreDocument(query, i);
             results.add(new ScoringResult(i, doc_score));
@@ -50,15 +52,7 @@ public class BM25 implements Ranker{
         double score = 0.0;
         for (int i = 0; i < query.size(); i++) {
             var word = query.get(i);
-            var doc_freq = index.get(word).getPostingsList().get(document);
-            int f_qd;
-
-            if (doc_freq != null) {
-                f_qd = doc_freq.getTf();
-            }
-            else {
-                f_qd = 0;
-            }
+            var f_qd = safeGetTf(word, document);
 
             double bdlen = b * ((double)ib.getDocLengths().get(document) / avgDocLen);
 
@@ -70,11 +64,12 @@ public class BM25 implements Ranker{
         return score;
     }
 
+
     private double getAvgIdf() {
         var idf = 0;
         var index = ib.getIndex();
         for (String word : index.keySet()) {
-            var q = index.get(word).getDf();
+            var q = safeGetDf(word);
             idf += Math.log(N - q + 0.5) - Math.log(q + 0.5);
         }
         return idf / (index.size() + 1);
@@ -90,12 +85,30 @@ public class BM25 implements Ranker{
     }
 
     private double idf(String word) {
-        var q = ib.getIndex().get(word).getDf();
+        var q = safeGetDf(word);
         var idf = Math.log((N - q + 0.5 / Math.log(q + 0.5)) + 1);
         if (idf >= 0) {
             return idf;
         }
         return epsilon * avgIdf;
+    }
+
+    private int safeGetTf(String word, int document) {
+        try {
+            return ib.getIndex().get(word).getPostingsList().get(document).getTf();
+        }
+        catch (NullPointerException e) {
+            return 0;
+        }
+    }
+
+    private int safeGetDf(String word) {
+        try {
+            return ib.getIndex().get(word).getDf();
+        }
+        catch (NullPointerException e) {
+            return 0;
+        }
     }
 
 

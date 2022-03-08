@@ -3,7 +3,7 @@ package uk.ac.ed.yazzzam;
 import uk.ac.ed.yazzzam.Indexer.CSVReader;
 import uk.ac.ed.yazzzam.Indexer.Song;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
-import uk.ac.ed.yazzzam.Ranker.BM25;
+
 import uk.ac.ed.yazzzam.Ranker.BM25Proximity;
 import uk.ac.ed.yazzzam.Ranker.Ranker;
 import uk.ac.ed.yazzzam.Ranker.ScoringResult;
@@ -20,6 +20,7 @@ import static spark.Spark.get;
 public class Main {
     public static void main(String[] args) throws IOException {
         ListIterator<Song> songsIter = CSVReader.readFile(GlobalSettings.inputFile).listIterator();
+        System.out.println("finished reading csv");
         var i = 0;
         while (songsIter.hasNext()){
             var song = songsIter.next();
