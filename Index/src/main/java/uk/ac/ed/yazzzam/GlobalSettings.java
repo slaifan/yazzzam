@@ -20,8 +20,13 @@ public class GlobalSettings {
     public final static double proximity_c = 25; // how important is words being close to each other. this should be the main experimentation
     public final static double proximity_threshold = 15; // if words are more than this value apart, pretend they are this value apart. probably better to keep above 10
 
-//    private static Preprocessor preprocessor = new BasicPreprocessor();
+
+    //    private static Preprocessor preprocessor = new BasicPreprocessor();
     private static Preprocessor preprocessor = new FullPreprocessor(stopwordsFile);
+
+    public final static String preprocessorMode = "stem";
+//    public final static String preprocessorMode = "metaphone";
+//    public final static String preprocessorMode = "soundex";
 
     private static IndexBuilder ib = new IndexBuilder(preprocessor);
 

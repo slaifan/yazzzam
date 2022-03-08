@@ -1,5 +1,6 @@
 package uk.ac.ed.yazzzam.Indexer;
 
+import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
@@ -29,7 +30,7 @@ public class IndexBuilder {
 
 	public void preprocessSong(Song song) {
 		var lyrics = song.getLyrics();
-		var preprocessedLyrics = preprocessor.preprocess(lyrics, "metaphone");// soundex, metaphone or stem
+		var preprocessedLyrics = preprocessor.preprocess(lyrics, GlobalSettings.preprocessorMode);// soundex, metaphone or stem
 //		System.out.println(preprocessedLyrics);
 		song.setPreprocessedLyrics(preprocessedLyrics);
 		song.deleteLyrics();
