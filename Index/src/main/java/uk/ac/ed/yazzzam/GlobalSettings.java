@@ -1,11 +1,9 @@
 package uk.ac.ed.yazzzam;
 
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
-import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.FullPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
-import uk.ac.ed.yazzzam.database.Database;
-import uk.ac.ed.yazzzam.database.Sql2oModel;
+import uk.ac.ed.yazzzam.Search.SimilarWordsFinder;
 
 public class GlobalSettings {
 
@@ -29,21 +27,21 @@ public class GlobalSettings {
 //	full preprocessor settings
   private static Preprocessor preprocessor = new FullPreprocessor(stopwordsFile);
 
-//    public final static String preprocessorMode = "stem";
+    public final static String preprocessorMode = "stem";
 //    public final static String preprocessorMode = "metaphone";
-    public final static String preprocessorMode = "soundex";
+//    public final static String preprocessorMode = "soundex";
 
     private static IndexBuilder ib = new IndexBuilder(preprocessor);
 
-    private static Database db;
+    private static SimilarWordsFinder similarWordsFinder = new SimilarWordsFinder(ib.getIndex().keySet());
 
 
 
 
 
-    public static Sql2oModel getDB() {
-        return db.getModel();
-    }
+//    public static Sql2oModel getDB() {
+//        return Database.getModel();
+//    }
     public static IndexBuilder getIndex() {
         return ib;
     }
@@ -51,5 +49,5 @@ public class GlobalSettings {
     public static Preprocessor getPreprocessor() {
         return preprocessor;
     }
-
+    public static SimilarWordsFinder getSimilarWordsFinder() { return similarWordsFinder; }
 }
