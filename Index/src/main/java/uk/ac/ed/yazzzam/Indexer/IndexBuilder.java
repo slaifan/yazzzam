@@ -30,7 +30,7 @@ public class IndexBuilder {
 
 	public void preprocessSong(Song song) {
 		var lyrics = song.getLyrics();
-		var preprocessedLyrics = preprocessor.preprocess(lyrics, GlobalSettings.preprocessorMode);// soundex, metaphone or stem
+		var preprocessedLyrics = preprocessor.preprocess(lyrics);// soundex, metaphone or stem
 //		System.out.println(preprocessedLyrics);
 		song.setPreprocessedLyrics(preprocessedLyrics);
 		song.deleteLyrics();

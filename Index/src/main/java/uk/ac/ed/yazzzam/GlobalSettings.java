@@ -36,12 +36,10 @@ public class GlobalSettings {
     private static SimilarWordsFinder similarWordsFinder = new SimilarWordsFinder(ib.getIndex().keySet());
 
 
-
-
-
 //    public static Sql2oModel getDB() {
 //        return Database.getModel();
-//    }
+//		}
+
     public static IndexBuilder getIndex() {
         return ib;
     }

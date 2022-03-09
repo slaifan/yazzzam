@@ -8,18 +8,16 @@
 /Index/index
 /Index/target
 
-<<<<<<< HEAD
-=======
-#postgres jdbc
-postgresql-42.3.3.jar
->>>>>>> ranking-java
+Index/.classpath
+Index/.project
+Index/.settings/
+
 
 #resources
 /Index/src/main/resources
 
 #logs
-<<<<<<< HEAD
+
 Index/hs_*
-=======
-Index/hs_*
->>>>>>> ranking-java
+
+

@@ -65,6 +65,7 @@ public class Main {
 
     private static ArrayList<ScoringResult> testSearch(String query, Preprocessor prec, Ranker ranker) {
         var q = prec.preprocess(query);
+        System.out.println(q);
         var res = ranker.score(q);
         return res;
     }

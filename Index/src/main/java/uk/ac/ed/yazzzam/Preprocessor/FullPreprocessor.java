@@ -3,6 +3,8 @@ package uk.ac.ed.yazzzam.Preprocessor;
 import opennlp.tools.stemmer.PorterStemmer;
 import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.codec.language.Soundex;
+
+import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Indexer.Reader;
 import uk.ac.ed.yazzzam.Indexer.TextFileReader;
 
@@ -27,7 +29,7 @@ public class FullPreprocessor implements Preprocessor {
 
 
 	// Tokenizes a string at every non-alphanumeric character
-	private List<String> tokenize(String document) {
+	private ArrayList<String> tokenize(String document) {
 		var tokens = new ArrayList<String>();
 		document = document.replaceAll("\\s+"," ");
 		var split_docs = document.split("[^\\w]+");
@@ -74,20 +76,20 @@ public class FullPreprocessor implements Preprocessor {
 		return tokens;
 	}
 
+//	@Override
+//	public List<String> preprocess(String text) {
+//		return stem(removeStopWords(tokenize(caseFold(text))));
+//	}
+
 	@Override
 	public List<String> preprocess(String text) {
-		return stem(removeStopWords(tokenize(caseFold(text))));
-	}
 
-	public List<String> preprocess(String text, String wordReducAlg) {
-
-		if (wordReducAlg.equals("stem"))
+		if (GlobalSettings.preprocessorMode.equals("stem"))
 			return stem(removeStopWords(tokenize(caseFold(text))));
-		else if (wordReducAlg.equals("soundex"))
-			return soundex(removeStopWords(tokenize(caseFold(text))));
-		else if (wordReducAlg.equals("metaphone"))
-			return metaphone(removeStopWords(tokenize(caseFold(text))));
-		return stem(removeStopWords(tokenize(caseFold(text))));
+		else if (GlobalSettings.preprocessorMode.equals("soundex"))
+			return soundex(tokenize(caseFold(text)));
+		else
+			return metaphone(tokenize(caseFold(text)));
 	}
 
 	
