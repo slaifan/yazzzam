@@ -25,6 +25,7 @@ public class Main {
             var song = songsIter.next();
             GlobalSettings.getIndex().preprocessSong(song);
             GlobalSettings.getIndex().indexSong(i, song);
+            GlobalSettings.getDB().insertSong(i, song);
             songsIter.remove();
             i++;
         }
@@ -44,6 +45,13 @@ public class Main {
             var res =  testSearch(query, preprocessor, ranker);
             return res.stream().map(e -> new SearchResult(e)).collect(Collectors.toList());
         }, new JsonTransformer());
+
+        get("/song", (request, response) -> {
+            var query = request.queryParams("id");
+            // access song from db
+            return new Song();
+        }, new JsonTransformer());
+
 
 //        var query = "i love the way you lie";
 //        Long startSearch = System.nanoTime();

@@ -4,6 +4,8 @@ import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
 import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.FullPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
+import uk.ac.ed.yazzzam.database.Database;
+import uk.ac.ed.yazzzam.database.Sql2oModel;
 
 public class GlobalSettings {
 
@@ -33,15 +35,15 @@ public class GlobalSettings {
 
     private static IndexBuilder ib = new IndexBuilder(preprocessor);
 
-//    private static Database db;
+    private static Database db;
 
 
 
 
 
-//    public static Sql2oModel getDB() {
-//        return db.getModel();
-//    }
+    public static Sql2oModel getDB() {
+        return db.getModel();
+    }
     public static IndexBuilder getIndex() {
         return ib;
     }
