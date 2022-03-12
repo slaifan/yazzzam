@@ -79,6 +79,43 @@ public class SimilarWordsFinder {
         return resultSet;
     }
 
+    public int getRelevantWords(List<String> query, Song song, int windowSize){
+        var docLen = song.lyrics.length();
+        var idxScores = new HashMap<Integer,Integer>(); // For mapping first index of window to the max score of window
+        var idxBestWindow = 0; // First index of window with the highest score
+        for(int left = 0; left <= docLen - windowSize; left++){
+            var windowString = "";
+            for(int right = left; right < left + windowSize; right++) {
+                windowString += song.lyrics[right]; //Creates the substring of the window by adding character by character until window size is reached
+                if (right = left + windowSize - 1) { //When window size is reached, we can check the occurrence of the words in the query in the given window
+                    var score = 0; //Unique score for each window
+                    for (String word : query){ //Loops through every word in query
+                        if (windowString.contains(word)) { // If word in query is contained in the window string, we count the number of occurrences of the word in the window
+                            var lastIndex = 0;
+                            var count = 0;
+                            while (lastIndex != -1) {
+                                lastIndex = windowString.indexOf(word, lastIndex); //Updates the value of the last index until all occurrences of the word are found, after the final occurrence is counted, indexOf returns -1 after which we stop counting
+                                if (lastIndex != -1) {
+                                    count++; //Unique count for each word in query for each window
+                                    lastIndex += word.length();
+                                }
+                            }
+                            score += count; // Count of each word in query is added to the score of each window
+                        }
+                    }
+                    idxScores.put(left,score); // Mapping starting index of window to score of window
+                }
+            }
+        }
+        var maxWindowScore = (Collections.max(idxScores.values())); //Calculating the maximum score
+        for(Entry<Integer,Integer> entry:idxScores) {
+            if (entry.getValue() == maxWindowScore) {
+                idxBestWindow = entry.getKey(); // Starting index of window with the highest score
+            }
+        }
+        return idxBestWindow;
+    }
+
     /*
     in java doing the equivalent of word[1:] throws NullPointerException,
     this is a safe way to take substring if possible or return empty string otherwise
