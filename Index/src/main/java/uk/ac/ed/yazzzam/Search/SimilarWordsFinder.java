@@ -79,15 +79,15 @@ public class SimilarWordsFinder {
         return resultSet;
     }
 
+
     public int getRelevantWords(List<String> query, Song song, int windowSize){
         var docLen = song.lyrics.length();
         var idxScores = new HashMap<Integer,Integer>(); // For mapping first index of window to the max score of window
         var idxBestWindow = 0; // First index of window with the highest score
         for(int left = 0; left <= docLen - windowSize; left++){
-            var windowString = "";
             for(int right = left; right < left + windowSize; right++) {
-                windowString += song.lyrics[right]; //Creates the substring of the window by adding character by character until window size is reached
                 if (right = left + windowSize - 1) { //When window size is reached, we can check the occurrence of the words in the query in the given window
+                    var windowString = substringSafeStartEnd(song.lyrics,left,right); //Creates the substring of the window 
                     var score = 0; //Unique score for each window
                     for (String word : query){ //Loops through every word in query
                         if (windowString.contains(word)) { // If word in query is contained in the window string, we count the number of occurrences of the word in the window
@@ -122,6 +122,10 @@ public class SimilarWordsFinder {
      */
     private static String substringSafe(String word, int start) {
         return word.length() > 1 ? word.substring(start) : "";
+    }
+
+    private static String substringSafeStartEnd(String word, int start, int end){
+        return word.length() > 1 ? word.substring(start,end) : "";
     }
 
     private static class TrieNode {
