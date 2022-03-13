@@ -1,23 +1,67 @@
+#
+# run as python lyrics_scraper.py sourcefile
+#
+from dataclasses import Field
+from operator import contains
 from urllib.request import Request, urlopen
+from xml.dom import NOT_FOUND_ERR
 from bs4 import BeautifulSoup, Comment
 from tqdm import tqdm
-import os, sys, csv, pstats, cProfile
+import os, sys, csv, pstats, cProfile, time, yaml
 
+CONFIGS_FILE = 'config.yml'
+DOWNLOADS_FOLDER = 'downloads'
+NAME_ERRORS_FILE = 'name_errors.tsv'
+PARSE_ERRORS_FILE = 'parse_errors.tsv'
+NOT_FOUND_FILE = 'not_found.tsv'
+DOWNLOADED_FILE = 'downloaded.txt'
+FIELD_NAMES = ['artist_name', 'track_name', 'release_date', 'genre', 'lyrics']
+
+def init_configs(titles_file):
+    cfg = {'total': 
+                    {'current_batch_no': 1,
+                    'current_batch_row_no': 0, 
+                    'songs_downloaded': 0,
+                    'parsing_errors': 0,
+                    'songs_not_found': 0}, 
+            'current_file':
+                    {'file_name': titles_file,
+                    'songs_downloaded': 0, 
+                    'parsing_errors': 0,
+                    'songs_not_found': 0}}
+            
+    with open(CONFIGS_FILE, "w+") as ymlfile:
+        yaml.dump(cfg, ymlfile)
+    return cfg
+
+def load_configs(titles_file):
+    with open(CONFIGS_FILE, 'r') as ymlfile:
+        cfg = yaml.safe_load(ymlfile)
+        if cfg['current_file']['file_name'] != titles_file:
+            cfg['current_file'] = {'file_name': titles_file,
+                    'songs_downloaded': 0, 
+                    'parsing_errors': 0,
+                    'songs_not_found': 0}
+    return cfg
+
+def save_configs(cfg):
+    with open(CONFIGS_FILE, "w") as ymlfile:
+        yaml.dump(cfg, ymlfile)
 
 def get_csv_size(file):
     with open(file, 'r', encoding='utf-8') as f:
-        size = len(f.readlines())
+        size = len(f.readlines())-1
     return size
 
-def csv_reader(file):
+def create_csv_reader(file):
     f = open(file, 'r', newline='', encoding='utf-8')
-    csv_reader = csv.reader(f, delimiter=',')  
+    csv_reader = csv.DictReader(f, delimiter=',')  
     return csv_reader, f
 
-def csv_writerow(file, row):
-    with open (file, 'a', newline='', encoding='utf-8') as f:
-        csv_writer = csv.writer(f, delimiter=',')
-        csv_writer.writerow(row)
+def create_csv_writer(file):
+    f = open (file, 'a', newline='', encoding='utf-8')
+    csv_writer = csv.DictWriter(f, delimiter='\t', fieldnames = FIELD_NAMES)
+    return csv_writer, f
 
 def soup_from_url(url):
     search_req = Request(url, headers={'User-Agent': 'XYZ/3.0'})
@@ -25,64 +69,108 @@ def soup_from_url(url):
     return BeautifulSoup(search_page, features="html.parser")
 
 
-def scrap(titles_reader, downloads_file, downloads, size):
+def scrap(titles_reader, titles_size, downloaded, cfg, ne_writer,pe_writer, nf_writer):
     found=0
-    cache = {}
+    cache = set()
     reformat = lambda str: str.replace(' ', '+').replace(',', '+')
-    for line in tqdm(range(size-1)):
+    curr_batch = f"batch_{cfg['total']['current_batch_no']}.tsv"
+    writer, f = create_csv_writer(curr_batch)
+    if cfg['total']['current_batch_row_no'] == 0 and os.stat(curr_batch).st_size == 0:
+        writer.writeheader()
+ 
+    for line in tqdm(range(titles_size)):
         row = next(titles_reader)
-        str_row = ",".join(row)
-        if str_row not in downloads and str_row not in cache:
+        id = "-".join([row['artist_name'], row['track_name']])
+        if id not in downloaded and id not in cache:
             try:
             
-                soup = soup_from_url(f"https://search.azlyrics.com/search.php?q={reformat(row[0])}+{reformat(row[1])}")      
-                
+                soup = soup_from_url(f"https://search.azlyrics.com/search.php?q={reformat(row['artist_name'])}+{reformat(row['track_name'])}")      
+                if 'Access denied' in str(soup):
+                    print('Scraper got blocked')
+                    quit()
                 lyrics_url = soup.tr.a.get('href')
 
+
+                time.sleep(60)
                 soup = soup_from_url(lyrics_url)
+                if 'Access denied' in str(soup):
+                    print('Scraper got blocked')
+                    quit()
 
                 sub_soup = soup.find_all('div')[20]
                 comments = sub_soup.find_all(string=lambda text: isinstance(text, Comment))
                 for c in comments:
                     if c.startswith(' Usage of azlyrics.com'):
                         try:
-                            with open(f'downloads/{row[0]} - {row[1]}.txt', 'w') as f:
-                                f.write(sub_soup.get_text().strip())
-                            csv_writerow(downloads_file, row)
-                            cache.add(str_row)
+                            lyrics = " ".join(sub_soup.get_text().splitlines())
+                            writer.writerow({'artist_name':row['artist_name'],
+                            'track_name':row['track_name'],
+                            'release_date':row['release_date'],
+                            'genre':row['genre'],
+                            'lyrics':lyrics})
+                            with open(DOWNLOADED_FILE, 'a') as f:
+                                f.write(f'{id}\n')
+                            cache.add(id)
                             found+=1
                         except:
-                            csv_writerow("name_errors.csv", row)
+                            ne_writer.writerow({'artist_name':row['artist_name'],
+                            'track_name':row['track_name'],
+                            'release_date':row['release_date'],
+                            'genre':row['genre'],
+                            'lyrics':row['lyrics']})
                         
 
                     else:
-                        csv_writerow("parse_errors.csv", row)
+                        pe_writer.writerow({'artist_name':row['artist_name'],
+                            'track_name':row['track_name'],
+                            'release_date':row['release_date'],
+                            'genre':row['genre'],
+                            'lyrics':row['lyrics']})
             except:
-                csv_writerow("notfound.csv", row)
+                nf_writer.writerow({'artist_name':row['artist_name'],
+                            'track_name':row['track_name'],
+                            'release_date':row['release_date'],
+                            'genre':row['genre'],
+                            'lyrics':row['lyrics']})
+        time.sleep(60)
     return found
 
 
 if __name__ == '__main__':
     with cProfile.Profile() as pr:
-        titles_file = sys.argv[1]
-        downloads_file = sys.argv[2]
-        size = get_csv_size(titles_file)
-        titles_reader, f = csv_reader(titles_file)
+        titles_file = sys.argv[1] ## titles/metadata folder
+        titles_size = get_csv_size(titles_file)
+        titles_reader, f = create_csv_reader(titles_file)
         headers = next(titles_reader)
 
-        if not os.path.exists(downloads_file):
-            csv_writerow(downloads_file, headers)
+        if not os.path.exists(DOWNLOADS_FOLDER):
+            os.makedirs(DOWNLOADS_FOLDER)
 
-        if not os.path.exists('downloads'):
-            os.makedirs('downloads')
+        if not os.path.exists(CONFIGS_FILE):
+            init_configs(titles_file)
+            
+        else:
+            cfg = load_configs(titles_file)
 
-        with open(downloads_file, encoding='utf-8') as df:
-            downloads = set(df.read().splitlines())
+        ne_writer, ne = create_csv_writer(NAME_ERRORS_FILE)
+        pe_writer, pe = create_csv_writer(PARSE_ERRORS_FILE)
+        nf_writer, nf = create_csv_writer(NOT_FOUND_FILE)
 
-        found = scrap(titles_reader, downloads_file, downloads, size)
+        if os.stat(NAME_ERRORS_FILE).st_size == 0:
+            ne_writer.writeheader()
+        if os.stat(PARSE_ERRORS_FILE).st_size == 0:
+            pe_writer.writeheader()
+        if os.stat(NOT_FOUND_FILE).st_size == 0:
+            nf_writer.writeheader()
 
-        print(f"{found}/{size-1}")
-        f.close()
+        with open(DOWNLOADED_FILE, 'w+', encoding='utf-8') as df:
+            downloaded = set(df.read().splitlines())
+        
+        found = scrap(titles_reader, titles_size, downloaded, cfg, ne_writer,pe_writer, nf_writer)
+
+        print(f"{found}/{titles_size-1}")
+        f.close(), ne.close(), pe.close(), nf.close
+
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()
