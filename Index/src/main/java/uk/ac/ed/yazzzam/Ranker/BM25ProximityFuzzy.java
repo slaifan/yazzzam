@@ -69,19 +69,19 @@ public class BM25ProximityFuzzy extends BM25 {
         var res = new ArrayList<Integer>();
         var simFinder = GlobalSettings.getSimilarWordsFinder();
         try {
-            res.addAll(ib.getIndex().get(word1).getPostingsList().get(docId).getPositions());
+            res.addAll(ib.getInvertedIndex().get(word1).getPostingsList().get(docId).getPositions());
         }
         catch (NullPointerException e) {
             var simWords = simFinder.findSimilarWords(word1, word1.length() / 2);
             for (String word : simWords) {
-                res.addAll(ib.getIndex().get(word).getPostingsList().get(docId).getPositions());
+                res.addAll(ib.getInvertedIndex().get(word).getPostingsList().get(docId).getPositions());
             }
             return res;
         }
 
         var similarWords = simFinder.findSimilarWords(word1, word1.length() / 3);
         for (String word : similarWords) {
-            res.addAll(ib.getIndex().get(word).getPostingsList().get(docId).getPositions());
+            res.addAll(ib.getInvertedIndex().get(word).getPostingsList().get(docId).getPositions());
         }
         Collections.sort(res);
         return res;

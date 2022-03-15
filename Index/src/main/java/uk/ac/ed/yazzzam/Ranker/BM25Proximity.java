@@ -67,7 +67,7 @@ public class BM25Proximity extends BM25 {
 
     private List<Integer> safeGetPosting(String word1, int docId) {
         try {
-            return ib.getIndex().get(word1).getPostingsList().get(docId).getPositions();
+            return ib.getInvertedIndex().get(word1).getPostingsList().get(docId).getPositions();
         }
         catch (NullPointerException e) {
             return new ArrayList<>();

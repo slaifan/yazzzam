@@ -1,11 +1,11 @@
 package uk.ac.ed.yazzzam.database;
 
 import org.sql2o.Connection;
-import org.sql2o.Query;
 import org.sql2o.Sql2o;
 import uk.ac.ed.yazzzam.Indexer.Song;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Sql2oModel implements Model{
 
@@ -49,6 +49,16 @@ public class Sql2oModel implements Model{
         }
     }
 
+    public List<SongData> getSongs(List<Integer> songIds){
+        var songIdsStr = songIds.stream().map(String::valueOf)
+                .collect(Collectors.joining(","));
+        try(Connection conn = sql2o.open()){
+            List<SongData> songs = conn.createQuery("select * from songs WHERE id IN(" + String.join(",", songIdsStr) + ")")
+                    .executeAndFetch(SongData.class);
+            return songs;
+        }
+    }
+
     @Override
     public boolean existSong(int songID){
         try(Connection conn = sql2o.open()){
@@ -60,15 +70,6 @@ public class Sql2oModel implements Model{
         }
     }
 
-    public boolean existSongTitle(String title){
-        try(Connection conn = sql2o.open()){
-            List<SongData> songs = conn.createQuery("select * from songs where title = :title")
-                    .addParameter("song", title)
-                    .executeAndFetch(SongData.class);
-
-            return songs.size() > 0;
-        }
-    }
 
 
     public List<String> getAllTitles(){
@@ -85,100 +86,28 @@ public class Sql2oModel implements Model{
         }
     }
 
-    public String getLyrics (int songID) {
-        String sql = "SELECT lyrics FROM songs WHERE id = :songID";
+    public SongData getSong(int songID) {
+        String sql = "SELECT * FROM songs WHERE id = :songID";
         try(Connection conn = sql2o.open()){
-            return conn.createQuery(sql)
+            SongData song = conn.createQuery(sql)
                     .addParameter("songID", songID)
-                    .executeScalar(String.class);
+                    .executeAndFetchFirst(SongData.class);
+            return song;
         }
     }
 
-    public String getArtist (int songID){
-        String sql = "SELECT artist FROM songs WHERE id = :songID";
-        try(Connection conn = sql2o.open()){
-            return conn.createQuery(sql)
-                    .addParameter("songID", songID)
-                    .executeScalar(String.class);
+
+    public List<String> getAllGenres() {
+        String sql = "SELECT DISTINCT(genre) FROM songs";
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql).executeScalarList(String.class);
         }
     }
 
-    public String getGenre(int songID){
-        String sql = "SELECT genre FROM songs WHERE id = :songID";
-        try(Connection conn = sql2o.open()){
-            return conn.createQuery(sql)
-                    .addParameter("songID", songID)
-                    .executeScalar(String.class);
+    public List<String> getAllArtists() {
+        String sql = "SELECT DISTINCT(artist) FROM songs";
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql).executeScalarList(String.class);
         }
     }
-
-    public Integer getYear(int songID){
-        String sql = "SELECT year FROM songs WHERE id = :songID";
-        try(Connection conn = sql2o.open()){
-            return conn.createQuery(sql)
-                    .addParameter("songID", songID)
-                    .executeScalar(Integer.class);
-        }
-    }
-
-    public String getTitle(int songID){
-        String sql = "SELECT title FROM songs WHERE id = :songID";
-        try(Connection conn = sql2o.open()){
-            return conn.createQuery(sql)
-                    .addParameter("songID", songID)
-                    .executeScalar(String.class);
-        }
-    }
-
-    // Insert multiple songs into table at the same time
-    public String insertBunchOfSongs(List<Song> songs){
-        final String sql = "insert into songs(id, title, artist, genre, year, lyrics) VALUES (:id, :title, :artist, :genre, :year, :lyrics)";
-
-        try (Connection conn = sql2o.beginTransaction()){
-            Query query = conn.createQuery(sql);
-
-            for (int i = 0; i < songs.size(); i++){
-                query.addParameter("id", i)
-                        .addParameter("title", songs.get(i).getTitle())
-                        .addParameter("artist", songs.get(i).getArtist())
-                        .addParameter("genre", songs.get(i).getGenre())
-                        .addParameter("year", songs.get(i).getYear())
-                        .addParameter("lyrics", songs.get(i).getLyrics())
-                        .addToBatch();
-            }
-            query.executeBatch();
-            conn.commit();
-        }
-        return "Success!";
-    }
-
-    public String insertSong(int id, Song song){
-        final String sql = "insert into songs(id, title, artist, genre, year, lyrics) VALUES (:id, :title, :artist, :genre, :year, :lyrics)";
-
-        try (Connection conn = sql2o.beginTransaction()){
-            Query query = conn.createQuery(sql);
-
-            query.addParameter("id", id)
-                    .addParameter("title", song.getTitle())
-                    .addParameter("artist", song.getArtist())
-                    .addParameter("genre", song.getGenre())
-                    .addParameter("year", song.getYear())
-                    .addParameter("lyrics", song.getLyrics())
-                    .addToBatch();
-            query.executeBatch();
-            conn.commit();
-        }
-        return "Success!";
-    }
-
-
-
-
-
-    // song title from og id
-    // song lyrics from title
-    // whole row from id
-    // Takes Song object, loops over metadata except lyrics, if not null create SQL query
-
-
 }

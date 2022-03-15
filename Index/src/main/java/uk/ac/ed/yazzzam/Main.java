@@ -1,34 +1,41 @@
 package uk.ac.ed.yazzzam;
 
-import uk.ac.ed.yazzzam.Indexer.CSVReader;
 import uk.ac.ed.yazzzam.Indexer.Song;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 import uk.ac.ed.yazzzam.Ranker.BM25ProximityFuzzy;
 import uk.ac.ed.yazzzam.Ranker.Ranker;
-import uk.ac.ed.yazzzam.Ranker.ScoringResult;
+import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.WebServer.JsonTransformer;
 import uk.ac.ed.yazzzam.WebServer.SearchResult;
+import uk.ac.ed.yazzzam.database.SongData;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ListIterator;
-import java.util.stream.Collectors;
 
 import static spark.Spark.get;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        ListIterator<Song> songsIter = CSVReader.readFile(GlobalSettings.inputFile).listIterator();
-        System.out.println("finished reading csv");
+    public static void main(String[] args) {
+        var db = GlobalSettings.getDB();
+        ListIterator<SongData> songsIter = db.getAllSongs().listIterator();
+        System.out.println("finished reading from db, number of songs = " + GlobalSettings.getDB().getSongCount());
         var i = 0;
         while (songsIter.hasNext()){
-            var song = songsIter.next();
+            var songData = songsIter.next();
+            var song = new Song(songData);
             GlobalSettings.getIndex().preprocessSong(song);
-            GlobalSettings.getIndex().indexSong(i, song);
-//            GlobalSettings.getDB().insertSong(i, song);
+            GlobalSettings.getIndex().indexSong(songData.getId(), song);
             songsIter.remove();
+            song = null;
+            if (i % 50000 == 0) {
+                System.gc();
+                System.out.println("number of songs index: " + i);
+                System.out.println(memoryState());
+            }
             i++;
         }
+        System.gc(); // collect garbage
+
         System.out.println(memoryState());
 
         var preprocessor = GlobalSettings.getPreprocessor();
@@ -39,18 +46,35 @@ public class Main {
 //        var ranker = new BM25Proximity(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
         var ranker = new BM25ProximityFuzzy(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
 
-
-
         get("/search", (request, response) -> {
             var query = request.queryParams("lyrics");
-            var res =  testSearch(query, preprocessor, ranker);
-            return res.stream().map(e -> new SearchResult(e)).collect(Collectors.toList());
+            return testSearch(query, preprocessor, ranker);
+        }, new JsonTransformer());
+
+        get("/phraseSearch", (request, response) -> {
+            var query = request.queryParams("lyrics");
+            return testPhraseSearch(query, preprocessor);
         }, new JsonTransformer());
 
         get("/song", (request, response) -> {
-            var query = request.queryParams("id");
-            // access song from db
-            return new Song();
+            var songId = Integer.parseInt(request.queryParams("id"));
+            var song = db.getSong(songId);
+            return song;
+        }, new JsonTransformer());
+
+        get("/allGenres", (request, response) -> {
+            var genres = db.getAllGenres();
+            return genres;
+        }, new JsonTransformer());
+
+        get("/allArtists", (request, response) -> {
+            var artists = db.getAllArtists();
+            return artists;
+        }, new JsonTransformer());
+
+        get("/allTitles", (request, response) -> {
+            var titles = db.getAllTitles();
+            return titles;
         }, new JsonTransformer());
 
 
@@ -63,10 +87,14 @@ public class Main {
 
     }
 
-    private static ArrayList<ScoringResult> testSearch(String query, Preprocessor prec, Ranker ranker) {
-        var q = prec.preprocess(query);
-        System.out.println(q);
-        var res = ranker.score(q);
+    private static ArrayList<SearchResult> testPhraseSearch(String query, Preprocessor preprocessor) {
+        return PhraseSearch.getResults(query);
+    }
+
+    private static ArrayList<SearchResult> testSearch(String query, Preprocessor prec, Ranker ranker) {
+//        var q = prec.preprocess(query);
+//        System.out.println(q);
+        var res = ranker.getResults(query);
         return res;
     }
 

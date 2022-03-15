@@ -7,12 +7,18 @@ public class SearchResult {
     private String songTitle;
     private int songId;
     private double score;
-//    private List<String> excerpt;
+    private String excerpt;
 
-    public SearchResult(ScoringResult sr) {
+    public SearchResult(ScoringResult sr, String excerpt) {
         songId = sr.docId;
         songTitle = GlobalSettings.getIndex().getTitle(songId);
         score = sr.score;
-//        excerpt = new ArrayList<String>() {" "  + songTitle};
+        this.excerpt = excerpt;
+    }
+
+    public SearchResult(int id, String excerpt) {
+        songId = id;
+        songTitle = GlobalSettings.getIndex().getTitle(id);
+        this.excerpt = excerpt;
     }
 }

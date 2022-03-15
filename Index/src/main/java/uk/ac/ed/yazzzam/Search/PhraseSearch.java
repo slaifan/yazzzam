@@ -1,49 +1,43 @@
 package uk.ac.ed.yazzzam.Search;
 
-import uk.ac.ed.yazzzam.index.InvertedIndex;
-import uk.ac.ed.yazzzam.index.postinglists.ProximityPostingListIterator;
+import uk.ac.ed.yazzzam.GlobalSettings;
+import uk.ac.ed.yazzzam.WebServer.SearchResult;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PhraseSearch {
     // input: preprocessed query and inverted index
-    public static HashSet<Integer> Search(List<String> words, InvertedIndex index) {
-        var postingLists = new ArrayList<ProximityPostingListIterator>();
-        for (String word: words) {
-            postingLists.add(index.getPostingList(word));
-        }
-        return getRelevantDocuments(postingLists);
-    }
-
-    private static HashSet<Integer> getRelevantDocuments(List<ProximityPostingListIterator> postingLists) {
+    public static HashSet<Integer> Search(List<String> words) {
         var res = new HashSet<Integer>();
-        for (int i=1; i < postingLists.size(); i++) {
-            postingLists.get(i).moveToNextDocument(); // initialise
+        Set<Integer> docs = GlobalSettings.getIndex().getInvertedIndex().get(words.get(0)).getPostingsList().keySet();
+        for (int i = 0; i < words.size(); i++) {
+            var ds = GlobalSettings.getIndex().getInvertedIndex().get(words.get(i)).getPostingsList().keySet();
+            docs.retainAll(ds);
         }
-        while (postingLists.get(0).moveToNextDocument()) {
-            if (postingLists.size() == 1) {
-                res.add(postingLists.get(0).getCurrentDocument());
+        for (int i : docs) {
+            var wordPositions = new ArrayList<HashSet<Integer>>();
+            for (int wordIdx = 0; wordIdx < words.size(); wordIdx++) {
+                 var pos = GlobalSettings
+                         .getIndex()
+                         .getInvertedIndex()
+                         .get(words.get(wordIdx))
+                         .getPostingsList()
+                         .get(i)
+                         .getPositions()
+                         .stream()
+                         .collect(Collectors.toSet());
+                 wordPositions.add((HashSet<Integer>) pos);
             }
-            else {
-                var goal = postingLists.get(0).getCurrentDocument();
-                for (int i = 1; i < postingLists.size(); i++) {
-                    var lst = postingLists.get(i);
-                    while (lst.getCurrentDocument() < goal) {
-                        var hasNext = lst.moveToNextTermPosition();
-                        if (!hasNext) {
-                            break;
-                        }
-                    }
-                    if (lst.getCurrentDocument() > goal) {
+            for (int expectedPosition : wordPositions.get(0)) {
+                for (int j = 1; j < words.size(); j++) {
+                    if (!wordPositions.get(j).contains(expectedPosition + j)) {
                         break;
-                    }
-                    if (lst.getCurrentDocument() == goal && i == postingLists.size() - 1) {
-                        System.out.println("Inspecting doc: " + lst.getCurrentDocument());
-                        if (phraseExists(postingLists)) {
-                            res.add(goal);
-                        }
+                    } else if (j == words.size() - 1) {
+                        res.add(i);
                     }
                 }
             }
@@ -51,28 +45,9 @@ public class PhraseSearch {
         return res;
     }
 
-    private static boolean phraseExists(List<ProximityPostingListIterator> postingLists) {
-        for (int i=1; i < postingLists.size(); i++) {
-            postingLists.get(i).moveToNextTermPosition(); // initialise
-        }
-        while (postingLists.get(0).moveToNextTermPosition()) {
-            for (int i=1; i < postingLists.size(); i++) {
-                var lst = postingLists.get(i);
-                var goal = postingLists.get(0).getCurrentTermPosition() + i;
-                while (lst.getCurrentTermPosition() < goal) {
-                    var hasNext = lst.moveToNextTermPosition();
-                    if (!hasNext) {
-                        return false;
-                    }
-                }
-                if (lst.getCurrentTermPosition() > goal) {
-                    break;
-                }
-                if (lst.getCurrentTermPosition() == goal && i == postingLists.size() - 1) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    public static ArrayList<SearchResult> getResults(String query) {
+        var q = GlobalSettings.getPreprocessor().preprocess(query);
+        var docs = PhraseSearch.Search(q);
+        return (ArrayList<SearchResult>) docs.stream().map(d -> new SearchResult(d, query)).collect(Collectors.toList());
     }
 }

@@ -1,6 +1,7 @@
 package uk.ac.ed.yazzzam.Indexer;
 
 import com.opencsv.bean.CsvBindByName;
+import uk.ac.ed.yazzzam.database.SongData;
 
 import java.util.List;
 
@@ -34,6 +35,14 @@ public class Song {
         this.genre = genre;
         this.year = year;
         this.lyrics = lyrics;
+    }
+
+    public Song(SongData data) {
+        this.title = data.getTitle();
+        this.artist = data.getArtist();
+        this.genre = data.getGenre();
+        this.year = data.getYear();
+        this.lyrics = data.getLyrics();
     }
 
     public String getTitle() {

@@ -1,13 +1,15 @@
 package uk.ac.ed.yazzzam;
 
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
-import uk.ac.ed.yazzzam.Preprocessor.FullPreprocessor;
+import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 import uk.ac.ed.yazzzam.Search.SimilarWordsFinder;
+import uk.ac.ed.yazzzam.database.Database;
+import uk.ac.ed.yazzzam.database.Sql2oModel;
 
 public class GlobalSettings {
 
-    public final static String inputFile = "test_song01.csv";
+//    public final static String inputFile = "test_song15.csv";
     public final static String stopwordsFile = "englishST.txt";
 
     // used in bm25:
@@ -22,10 +24,10 @@ public class GlobalSettings {
     public final static double proximity_threshold = 12; // if words are more than this value apart, pretend they are this value apart. probably better to keep above 10
 
 
-//    private static Preprocessor preprocessor = new BasicPreprocessor();
+    private static Preprocessor preprocessor = new BasicPreprocessor();
 
 //	full preprocessor settings
-  private static Preprocessor preprocessor = new FullPreprocessor(stopwordsFile);
+//  private static Preprocessor preprocessor = new FullPreprocessor(stopwordsFile);
 
     public final static String preprocessorMode = "stem";
 //    public final static String preprocessorMode = "metaphone";
@@ -33,12 +35,12 @@ public class GlobalSettings {
 
     private static IndexBuilder ib = new IndexBuilder(preprocessor);
 
-    private static SimilarWordsFinder similarWordsFinder = new SimilarWordsFinder(ib.getIndex().keySet());
+    private static SimilarWordsFinder similarWordsFinder = new SimilarWordsFinder(ib.getInvertedIndex().keySet());
 
 
-//    public static Sql2oModel getDB() {
-//        return Database.getModel();
-//		}
+    public static Sql2oModel getDB() {
+        return Database.getModel();
+		}
 
     public static IndexBuilder getIndex() {
         return ib;

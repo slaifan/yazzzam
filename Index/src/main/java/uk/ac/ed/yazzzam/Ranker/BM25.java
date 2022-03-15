@@ -2,8 +2,14 @@ package uk.ac.ed.yazzzam.Ranker;
 
 import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
+import uk.ac.ed.yazzzam.WebServer.SearchResult;
+import uk.ac.ed.yazzzam.database.SongData;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.stream.Collectors;
 
 public class BM25 implements Ranker{
 
@@ -11,6 +17,8 @@ public class BM25 implements Ranker{
     private double epsilon;
     private double b;
     private double n;
+
+    private int WINDOW_SIZE = 25;
 
     protected IndexBuilder ib = GlobalSettings.getIndex();
 
@@ -34,8 +42,7 @@ public class BM25 implements Ranker{
     public ArrayList<ScoringResult> score(List<String> query) {
         PriorityQueue<ScoringResult> results = new PriorityQueue<>();
         var res = new ArrayList<ScoringResult>();
-        System.out.println("num docs is " + N);
-        System.out.println("index size is " + ib.getIndex().size());
+
         for (int i = 0; i < N; i++) {
             var doc_score = scoreDocument(query, i);
             results.add(new ScoringResult(i, doc_score));
@@ -47,8 +54,27 @@ public class BM25 implements Ranker{
         return res;
     }
 
+    public ArrayList<SearchResult> getResults(String rawQuery) {
+        var query = GlobalSettings.getPreprocessor().preprocess(rawQuery);
+        var results = score(query);
+        var out = new ArrayList<SearchResult>();
+
+        var db = GlobalSettings.getDB();
+
+        var songs = db.getSongs(results.stream().map(e -> e.docId).collect(Collectors.toList()));
+
+        for (int i = 0; i < songs.size(); i++) {
+            var doc = results.get(i);
+            assert (doc.docId == songs.get(i).getId());
+            var excerpt = i < 40 ? getExcerpt(rawQuery, songs.get(i), WINDOW_SIZE) : " ";
+            out.add(new SearchResult(doc, excerpt));
+        }
+        return out;
+    }
+
+
     private double scoreDocument(List<String> query, int document) {
-        var index = ib.getIndex();
+        var index = ib.getInvertedIndex();
         double score = 0.0;
         for (int i = 0; i < query.size(); i++) {
             var word = query.get(i);
@@ -67,7 +93,7 @@ public class BM25 implements Ranker{
 
     private double getAvgIdf() {
         var idf = 0;
-        var index = ib.getIndex();
+        var index = ib.getInvertedIndex();
         for (String word : index.keySet()) {
             var q = safeGetDf(word);
             idf += Math.log(N - q + 0.5) - Math.log(q + 0.5);
@@ -95,7 +121,7 @@ public class BM25 implements Ranker{
 
     private int safeGetTf(String word, int document) {
         try {
-            return ib.getIndex().get(word).getPostingsList().get(document).getTf();
+            return ib.getInvertedIndex().get(word).getPostingsList().get(document).getTf();
         }
         catch (NullPointerException e) {
             return 0;
@@ -104,13 +130,38 @@ public class BM25 implements Ranker{
 
     private int safeGetDf(String word) {
         try {
-            return ib.getIndex().get(word).getDf();
+            return ib.getInvertedIndex().get(word).getDf();
         }
         catch (NullPointerException e) {
             return 0;
         }
     }
 
+    public String getExcerpt(String rawQuery, SongData song, int windowSize) {
+        var query = Arrays.asList(rawQuery.split(" "));
+        var doc = Arrays.asList(song.getLyrics().split(" "));
+        var bestWindowScore = 0.0;
+        var bestWindowIdx = 0;
 
-    
+        var prevWindowScore = 0.0;
+
+        var fstWindow = doc.subList(0, windowSize);
+        for (int j = 0; j < fstWindow.size(); j++) {
+            var word = fstWindow.get(j);
+            if (query.contains(word)) {
+                prevWindowScore += idf(word);
+            }
+        }
+
+        for (int i = 1; i < doc.size() - windowSize; i++) {
+            var windowScore = prevWindowScore - idf(doc.get(i -1)) + idf(doc.get(i + windowSize));
+            if (windowScore > bestWindowScore) {
+                bestWindowScore = windowScore;
+                bestWindowIdx = i;
+            }
+        }
+        return String.join(" ", doc.subList(bestWindowIdx, bestWindowIdx + windowSize));
+    }
+
+
 }

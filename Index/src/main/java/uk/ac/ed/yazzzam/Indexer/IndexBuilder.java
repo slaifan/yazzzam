@@ -1,8 +1,6 @@
 package uk.ac.ed.yazzzam.Indexer;
 
-import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Preprocessor.BasicPreprocessor;
-
 import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 
 import java.util.HashMap;
@@ -36,7 +34,7 @@ public class IndexBuilder {
 		song.deleteLyrics();
 	}
 
-	public Map<String, TermData> getIndex(){
+	public Map<String, TermData> getInvertedIndex(){
 		return index;
 	}
 
