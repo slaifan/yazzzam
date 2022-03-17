@@ -16,4 +16,12 @@ public class ScoringResult implements Comparable<ScoringResult>{
         return score - otherResult.score < 0 ? (1) : -1;
 
     }
+
+    @Override
+    public String toString() {
+        return "ScoringResult{" +
+                "docId=" + docId +
+                ", score=" + score +
+                '}';
+    }
 }

@@ -10,7 +10,7 @@ public class IndexBuilder {
 	private Preprocessor preprocessor;
 	private Map<String, TermData> index;
 	private Map<Integer, Integer> docslengths;
-	private Map<Integer, String> titles;
+	private Map<Integer, Song> titles;
 
 	public IndexBuilder() {
 		index = new HashMap<>();
@@ -31,7 +31,7 @@ public class IndexBuilder {
 		var preprocessedLyrics = preprocessor.preprocess(lyrics);// soundex, metaphone or stem
 //		System.out.println(preprocessedLyrics);
 		song.setPreprocessedLyrics(preprocessedLyrics);
-		song.deleteLyrics();
+//		song.deleteLyrics();
 	}
 
 	public Map<String, TermData> getInvertedIndex(){
@@ -42,14 +42,14 @@ public class IndexBuilder {
 		return docslengths;
 	}
 
-	public String getTitle(int id){
+	public Song getSong(int id){
 		return titles.get(id);
 	}
 
 	public void indexSong(int i, Song song) {
 		var docSize = song.getPreprocessedLyrics().size();
 		docslengths.put(i, docSize);
-		titles.put(i, song.getTitle());
+		titles.put(i, song);
 
 		for (var j = 0; j < docSize; j++){
 			var term = song.getPreprocessedLyrics().get(j);

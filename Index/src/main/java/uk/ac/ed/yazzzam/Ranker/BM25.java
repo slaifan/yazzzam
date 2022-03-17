@@ -2,13 +2,10 @@ package uk.ac.ed.yazzzam.Ranker;
 
 import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
+import uk.ac.ed.yazzzam.Indexer.Song;
 import uk.ac.ed.yazzzam.WebServer.SearchResult;
-import uk.ac.ed.yazzzam.database.SongData;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BM25 implements Ranker{
@@ -16,7 +13,7 @@ public class BM25 implements Ranker{
     private double k1;
     private double epsilon;
     private double b;
-    private double n;
+    private int n;
 
     private int WINDOW_SIZE = 25;
 
@@ -43,13 +40,41 @@ public class BM25 implements Ranker{
         PriorityQueue<ScoringResult> results = new PriorityQueue<>();
         var res = new ArrayList<ScoringResult>();
 
-        for (int i = 0; i < N; i++) {
+        for (int i : ib.getDocLengths().keySet()) {
             var doc_score = scoreDocument(query, i);
             results.add(new ScoringResult(i, doc_score));
         }
 
         for (int i = 0; i < n; i++) {
             res.add(results.poll());
+        }
+        return res;
+    }
+
+    public ArrayList<ScoringResult> score(List<String> query, Set<Integer> filteredIds) {
+        PriorityQueue<ScoringResult> results = new PriorityQueue<>();
+        var res = new ArrayList<ScoringResult>();
+
+        for (int i : ib.getDocLengths().keySet()) {
+            if (filteredIds.contains(i)) {
+                var doc_score = scoreDocument(query, i);
+                results.add(new ScoringResult(i, doc_score));
+//                System.out.println("document " + i + " added to result " + ib.getTitle(i));
+//                System.out.println("queue size is now " + results.size());
+            }
+            else if (i == 50564) {
+                System.out.println("doc was actually filtered out");
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            var r = results.poll();
+            if (r == null) {
+                return res;
+            }
+//                System.out.println("document " + r.docId + " added to result " + ib.getTitle(r.docId));
+//                System.out.println("i is: " + i);
+            res.add(r);
         }
         return res;
     }
@@ -65,17 +90,23 @@ public class BM25 implements Ranker{
 
         for (int i = 0; i < songs.size(); i++) {
             var doc = results.get(i);
-            assert (doc.docId == songs.get(i).getId());
-            var excerpt = i < 40 ? getExcerpt(rawQuery, songs.get(i), WINDOW_SIZE) : " ";
-            out.add(new SearchResult(doc, excerpt));
+//            assert (doc.docId == songs.get(i).getId());
+//            var excerpt = i < 40 ? getExcerpt(rawQuery, songs.get(i), WINDOW_SIZE) : " ";
+            out.add(new SearchResult(doc, " "));
         }
         return out;
     }
 
 
+
+
     private double scoreDocument(List<String> query, int document) {
-        var index = ib.getInvertedIndex();
         double score = 0.0;
+        if (document == 212918) {
+            System.out.println("bdlen is " + b * ((double)ib.getDocLengths().get(document) / avgDocLen));
+            System.out.println("avg len is " + avgDocLen);
+            System.out.println("doc len is " + (double)ib.getDocLengths().get(document));
+        }
         for (int i = 0; i < query.size(); i++) {
             var word = query.get(i);
             var f_qd = safeGetTf(word, document);
@@ -83,8 +114,12 @@ public class BM25 implements Ranker{
             double bdlen = b * ((double)ib.getDocLengths().get(document) / avgDocLen);
 
             double formula = (f_qd * (k1 + 1))/(f_qd + k1 * (1 - b + bdlen));
-
             double word_score = idf(word) * formula;
+            if (document == 212918) {
+
+                System.out.println("formula for word: " + word + " is " + formula);
+                System.out.println("idf for word: " + word + " is " + idf(word));
+            }
             score += word_score;
         }
         return score;
@@ -137,9 +172,14 @@ public class BM25 implements Ranker{
         }
     }
 
-    public String getExcerpt(String rawQuery, SongData song, int windowSize) {
-        var query = Arrays.asList(rawQuery.split(" "));
-        var doc = Arrays.asList(song.getLyrics().split(" "));
+    public String getExcerpt(String rawQuery, Song song, int windowSize) {
+//        var query = Arrays.asList(rawQuery.split(" "));
+//        var doc = Arrays.asList(song.getLyrics().split(" "));
+        var query = GlobalSettings.getPreprocessor().preprocess(rawQuery);
+        var doc = song.getPreprocessedLyrics();
+        if (doc.size() <= windowSize) {
+            return song.getLyrics();
+        }
         var bestWindowScore = 0.0;
         var bestWindowIdx = 0;
 
@@ -160,8 +200,11 @@ public class BM25 implements Ranker{
                 bestWindowIdx = i;
             }
         }
-        return String.join(" ", doc.subList(bestWindowIdx, bestWindowIdx + windowSize));
+        var raw = Arrays.asList(song.getLyrics().split(" "));
+//        System.out.println("best idx: " + bestWindowIdx);
+//        System.out.println("raw size: " + raw.size());
+//        System.out.println("doc size: " + doc.size());
+        var excerpt = doc.subList(bestWindowIdx,  Math.min(doc.size() - 1, bestWindowIdx + windowSize - 1));
+        return String.join(" ", excerpt);
     }
-
-
 }

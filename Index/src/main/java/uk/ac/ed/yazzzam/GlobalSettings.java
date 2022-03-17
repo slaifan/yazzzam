@@ -9,8 +9,13 @@ import uk.ac.ed.yazzzam.database.Sql2oModel;
 
 public class GlobalSettings {
 
-//    public final static String inputFile = "test_song15.csv";
     public final static String stopwordsFile = "englishST.txt";
+
+    public static final String NO_SEARCH = "**NONE_SPECIFIED**";
+    public static final String DB_NAME = "db";
+
+    public final static int excerpt_size = 20; // keep even
+
 
     // used in bm25:
     public final static int ranker_n = 100; // how many songs to be returned from scorer

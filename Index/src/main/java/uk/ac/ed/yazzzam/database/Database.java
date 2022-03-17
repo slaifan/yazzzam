@@ -1,10 +1,12 @@
 package uk.ac.ed.yazzzam.database;
 
+import uk.ac.ed.yazzzam.GlobalSettings;
+
 public class Database {
     private static Sql2oModel model;
 
     private static void setupDatabase() {
-        ConnectDB conn = new ConnectDB("jdbc:postgresql://localhost:5432/db", "postgres", "ttds_YAZZZAM123");
+        ConnectDB conn = new ConnectDB("jdbc:postgresql://localhost:5432/" + GlobalSettings.DB_NAME, "postgres", "ttds_YAZZZAM123");
         conn.connect();
         model = conn.getModel();
     }

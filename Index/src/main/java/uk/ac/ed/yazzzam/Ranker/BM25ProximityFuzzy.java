@@ -2,10 +2,13 @@ package uk.ac.ed.yazzzam.Ranker;
 
 import uk.ac.ed.yazzzam.GlobalSettings;
 import uk.ac.ed.yazzzam.Indexer.IndexBuilder;
+import uk.ac.ed.yazzzam.WebServer.SearchResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BM25ProximityFuzzy extends BM25 {
     private double c;
@@ -29,7 +32,7 @@ public class BM25ProximityFuzzy extends BM25 {
             for (int i = 0; i < query.size(); i++) {
                 for (int j = i; j < query.size(); j++) {
                     if (query.get(i) != query.get(j)) {
-                        proximityScore += 1 / findProximity(query.get(i), query.get(j), result.docId);
+                        proximityScore += 1 / (0.01 + findProximity(query.get(i), query.get(j), result.docId));
                     }
                 }
             }
@@ -38,6 +41,46 @@ public class BM25ProximityFuzzy extends BM25 {
 
         Collections.sort(res);
         return res;
+    }
+
+    public ArrayList<ScoringResult> scoreFiltered(List<String> query, Set<Integer> filteredIds) {
+        var res = super.score(query, filteredIds);
+        System.out.println(res);
+        for (ScoringResult result: res) {
+            double proximityScore = 0.0;
+            for (int i = 0; i < query.size(); i++) {
+                for (int j = i; j < query.size(); j++) {
+                    if (query.get(i) != query.get(j)) {
+                        proximityScore += 1 / (0.01 + findProximity(query.get(i), query.get(j), result.docId));
+                    }
+                }
+            }
+            result.score += c * proximityScore;
+        }
+
+        Collections.sort(res);
+        return res;
+    }
+
+    @Override
+    public ArrayList<SearchResult> getResults(String rawQuery) {
+        var query = GlobalSettings.getPreprocessor().preprocess(rawQuery);
+        var results = score(query);
+
+        var out = results.stream().map(r -> new SearchResult(r, getExcerpt(rawQuery, ib.getSong(r.docId), GlobalSettings.excerpt_size))).collect(Collectors.toList());
+        return (ArrayList<SearchResult>) out;
+    }
+
+    public ArrayList<SearchResult> getResultsFiltered(String rawQuery, Set<Integer> filteredIds) {
+        var query = GlobalSettings.getPreprocessor().preprocess(rawQuery);
+        var results = scoreFiltered(query, filteredIds);
+
+        var out = results.stream().map(e -> new SearchResult(e, " ")).collect(Collectors.toList());
+        if (out.size() == 0) {
+            return null;
+        }
+
+        return (ArrayList<SearchResult>) out;
     }
 
     private double findProximity(String word1, String word2, int docId) {

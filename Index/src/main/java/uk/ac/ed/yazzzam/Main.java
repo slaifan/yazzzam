@@ -1,24 +1,24 @@
 package uk.ac.ed.yazzzam;
 
 import uk.ac.ed.yazzzam.Indexer.Song;
-import uk.ac.ed.yazzzam.Preprocessor.Preprocessor;
 import uk.ac.ed.yazzzam.Ranker.BM25ProximityFuzzy;
-import uk.ac.ed.yazzzam.Ranker.Ranker;
 import uk.ac.ed.yazzzam.Search.PhraseSearch;
 import uk.ac.ed.yazzzam.WebServer.JsonTransformer;
-import uk.ac.ed.yazzzam.WebServer.SearchResult;
 import uk.ac.ed.yazzzam.database.SongData;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ListIterator;
 
+import static spark.Spark.after;
 import static spark.Spark.get;
 
 public class Main {
     public static void main(String[] args) {
         var db = GlobalSettings.getDB();
+        var numSongs = GlobalSettings.getDB().getSongCount();
         ListIterator<SongData> songsIter = db.getAllSongs().listIterator();
-        System.out.println("finished reading from db, number of songs = " + GlobalSettings.getDB().getSongCount());
+        System.out.println("finished reading from db, number of songs = " + numSongs);
         var i = 0;
         while (songsIter.hasNext()){
             var songData = songsIter.next();
@@ -30,7 +30,7 @@ public class Main {
             if (i % 50000 == 0) {
                 System.gc();
                 System.out.println("number of songs index: " + i);
-                System.out.println(memoryState());
+//                System.out.println(memoryState());
             }
             i++;
         }
@@ -46,57 +46,94 @@ public class Main {
 //        var ranker = new BM25Proximity(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
         var ranker = new BM25ProximityFuzzy(GlobalSettings.ranker_k1, GlobalSettings.ranker_b, GlobalSettings.ranker_epsilon, GlobalSettings.ranker_n, GlobalSettings.proximity_c, GlobalSettings.proximity_threshold);
 
+        var phraseSearch = new PhraseSearch();
+
+
         get("/search", (request, response) -> {
-            var query = request.queryParams("lyrics");
-            return testSearch(query, preprocessor, ranker);
+            var lyrics = request.queryParamOrDefault("lyrics", GlobalSettings.NO_SEARCH);
+            var genre = request.queryParamOrDefault("genre", GlobalSettings.NO_SEARCH);
+            var year = request.queryParamOrDefault("year", GlobalSettings.NO_SEARCH);
+            var title = request.queryParamOrDefault("title", GlobalSettings.NO_SEARCH);
+            var artist = request.queryParamOrDefault("artist", GlobalSettings.NO_SEARCH);
+
+            var needsFilter = !((genre.equals(GlobalSettings.NO_SEARCH)) && (title.equals(GlobalSettings.NO_SEARCH))
+                    && (artist.equals(GlobalSettings.NO_SEARCH))  && (year.equals(GlobalSettings.NO_SEARCH)));
+
+            if (needsFilter) {
+                var filteredIds = db.filterSongs(genre, year, title, artist);
+                return ranker.getResultsFiltered(lyrics, filteredIds);
+            }
+            else {
+                return ranker.getResults(lyrics);
+            }
         }, new JsonTransformer());
 
         get("/phraseSearch", (request, response) -> {
-            var query = request.queryParams("lyrics");
-            return testPhraseSearch(query, preprocessor);
+            var lyrics = request.queryParamOrDefault("lyrics", GlobalSettings.NO_SEARCH);
+            var genre = request.queryParamOrDefault("genre", GlobalSettings.NO_SEARCH);
+            var year = request.queryParamOrDefault("year", GlobalSettings.NO_SEARCH);
+            var title = request.queryParamOrDefault("title", GlobalSettings.NO_SEARCH);
+            var artist = request.queryParamOrDefault("artist", GlobalSettings.NO_SEARCH);
+
+            var needsFilter = !((genre.equals(GlobalSettings.NO_SEARCH)) && (title.equals(GlobalSettings.NO_SEARCH))
+                    && (artist.equals(GlobalSettings.NO_SEARCH))  && (year.equals(GlobalSettings.NO_SEARCH)));
+
+            if (needsFilter) {
+                var filteredIds = db.filterSongs(genre, year, title, artist);
+                return phraseSearch.getResults(lyrics, filteredIds);
+            }
+            else {
+                return phraseSearch.getResults(lyrics);
+            }
         }, new JsonTransformer());
+
 
         get("/song", (request, response) -> {
             var songId = Integer.parseInt(request.queryParams("id"));
             var song = db.getSong(songId);
+            song.lyrics = song.lyrics.replaceAll("\\s*(?<punctuation>[,.]+)\\s+", "${punctuation}\n");
             return song;
         }, new JsonTransformer());
 
         get("/allGenres", (request, response) -> {
             var genres = db.getAllGenres();
+            Collections.sort(genres);
             return genres;
         }, new JsonTransformer());
 
         get("/allArtists", (request, response) -> {
             var artists = db.getAllArtists();
+            Collections.sort(artists);
             return artists;
         }, new JsonTransformer());
 
         get("/allTitles", (request, response) -> {
             var titles = db.getAllTitles();
+            Collections.sort(titles);
             return titles;
         }, new JsonTransformer());
 
+        get("/similarSongs", (request, response) -> {
+            var genre = request.queryParams("genre");
+            var artist = request.queryParams("artist");
+            var year = request.queryParams("year");
 
-//        var query = "i love the way you lie";
-//        Long startSearch = System.nanoTime();
-//        var res =  testSearch(query, preprocessor, ranker);
-//        Long endSearch = System.nanoTime();
-//        System.out.println("searching took: " + getTimeSeconds(startSearch, endSearch)+ " seconds");
-//        System.out.println(res.stream().map(e -> new SearchResult(e)).collect(Collectors.toList()));
+            var songs = new ArrayList<SongData>();
+
+            songs.addAll(db.getSameGenre(genre));
+            songs.addAll(db.getSameArtist(artist));
+            songs.addAll(db.getSameYear(year));
+            return songs;
+        }, new JsonTransformer());
+
+        after((request, response) -> {
+            response.header("Access-Control-Allow-Origin", "*");
+            response.header("Access-Control-Allow-Methods", "GET");
+        });
+
 
     }
 
-    private static ArrayList<SearchResult> testPhraseSearch(String query, Preprocessor preprocessor) {
-        return PhraseSearch.getResults(query);
-    }
-
-    private static ArrayList<SearchResult> testSearch(String query, Preprocessor prec, Ranker ranker) {
-//        var q = prec.preprocess(query);
-//        System.out.println(q);
-        var res = ranker.getResults(query);
-        return res;
-    }
 
     private static Double getTimeSeconds(Long start, Long end) {
         Long durationNano = end - start;
